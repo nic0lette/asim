@@ -12,11 +12,11 @@ import java.sql.SQLException;
  * Created by johanna on 11/2/14.
  */
 public class Database  {
-    private Context context;
+    private final Context context;
     private SQLiteDatabase db;
     private DatabaseHelper dbHelper;
 
-    public Database(Context context) {
+    public Database(final Context context) {
         this.context = context;
         dbHelper = new DatabaseHelper(context);
         db = dbHelper.getWritableDatabase();
@@ -33,22 +33,22 @@ public class Database  {
         public static final String DATABASE_NAME = "asim.db";
         public static final int DATABASE_VERSION = 1;
 
-        public DatabaseHelper(Context context) {
+        public DatabaseHelper(final Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
 
             this.context = context;
         }
 
         @Override
-        public void onCreate(SQLiteDatabase database) {
-            String insert = context.getString(R.string.create_message_table,
+        public void onCreate(final SQLiteDatabase database) {
+            final String insert = context.getString(R.string.create_message_table,
                     context.getString(R.string.message_table_name));
 
             database.execSQL(insert);
         }
 
         @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
             throw new IllegalStateException("Database upgrade is not possible");
         }
     }
