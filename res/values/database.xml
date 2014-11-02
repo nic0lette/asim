@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="message_table_name">messages</string>
+    <string name="create_message_table">
+        CREATE TABLE IF NOT EXISTS %s (
+            ts INTEGER DEFAULT (datetime('now','localtime')) NOT NULL,
+            xmpp_id INTEGER NOT NULL,
+            sender BOOLEAN NOT NULL,
+            processed BOOLEAN DEFAULT 0 NOT NULL,
+            message TEXT NOT NULL,
+            xhtml BOOLEAN DEFAULT 0 NOT NULL,
+            otr BOOLEAN DEFAULT 0 NOT NULL
+        );
+    </string>
+</resources>
