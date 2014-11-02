@@ -4,11 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.sql.SQLException;
-
 /**
- *
- *
  * Created by johanna on 11/2/14.
  */
 public class Database  {
