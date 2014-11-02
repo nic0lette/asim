@@ -24,7 +24,9 @@ proguard/
 
 # Intellij files
 .idea/
-*.iml
+
+# Maven libs
+hg-libs/
 
 # Log Files
 *.log
