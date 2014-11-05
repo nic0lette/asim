@@ -3,7 +3,7 @@
     <string name="message_table_name">messages</string>
     <string name="create_message_table">
         CREATE TABLE IF NOT EXISTS %s (
-            ts INTEGER DEFAULT (datetime('now','localtime')) NOT NULL,
+            ts INTEGER DEFAULT (datetime(\'now\',\'localtime\')) NOT NULL,
             xmpp_id INTEGER NOT NULL,
             sender BOOLEAN NOT NULL,
             processed BOOLEAN DEFAULT 0 NOT NULL,

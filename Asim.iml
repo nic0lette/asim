@@ -15,11 +15,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org.igniterealtime.smack:smack-core:4.1.0-alpha3" level="project" />
-    <orderEntry type="library" name="org.igniterealtime.smack:smack-android:4.1.0-alpha4" level="project" />
-    <orderEntry type="library" name="org.igniterealtime.smack:smack-extensions:4.1.0-alpha4" level="project" />
-    <orderEntry type="library" name="org.androidannotations:androidannotations:3.1" level="project" />
-    <orderEntry type="library" name="otr4j-0.21" level="project" />
+    <orderEntry type="library" name="libs" level="project" />
   </component>
 </module>
 
