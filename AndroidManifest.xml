@@ -13,7 +13,8 @@
 
 	<application
 		android:label="@string/app_name"
-		android:icon="@drawable/ic_launcher">
+		android:icon="@drawable/ic_launcher"
+		android:name=".AsimApplication">
 		<activity
 			android:name="MainActivity"
 			android:label="@string/app_name">

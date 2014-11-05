@@ -14,4 +14,19 @@ public class XmppService extends Service {
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+	}
+
+	@Override
+	public int onStartCommand(final Intent intent, final int flags, final int startId) {
+		return super.onStartCommand(intent, flags, startId);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
 }
