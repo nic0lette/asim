@@ -5,10 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
-import org.jivesoftware.smack.AbstractXMPPConnection;
-import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.nick.packet.Nick;
@@ -16,7 +13,7 @@ import org.jivesoftware.smackx.nick.packet.Nick;
 import java.io.IOException;
 
 /**
- * Created by nicole on 11/4/14.
+ * Service handling all XMPP connection logic
  */
 public class XmppService extends Service {
 	private static final String TAG = XmppService.class.getSimpleName();
@@ -38,8 +35,6 @@ public class XmppService extends Service {
 
 		// continue running until stopped
 		return START_STICKY;
-
-		//return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
@@ -78,11 +73,19 @@ public class XmppService extends Service {
 
 	}
 
-	private void onConnected(AbstractXMPPConnection connection) {
-		if (connection != null) {
-			Log.i(TAG, "Connected!");
-		} else {
+	private void onConnected(AbstractXMPPConnection conn) {
+		if (conn == null) {
 			Log.i(TAG, "Didn't connect =(");
+			return;
+		}
+
+		Log.i(TAG, "Connected to " + conn.getServiceName() + " with " + conn.getUser() );
+
+		Roster roster = conn.getRoster();
+
+		Log.i(TAG, "Duming roster");
+		for ( RosterEntry e : roster.getEntries() ) {
+			Log.i(TAG, "User " + e.getName() + "(" + e.getUser() + ")" + e.getGroups());
 		}
 	}
 }

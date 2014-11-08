@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by johanna on 11/2/14.
+ * Class handling all the Database logic, including table creation, etc.
  */
 public class Database  {
     private final Context context;
