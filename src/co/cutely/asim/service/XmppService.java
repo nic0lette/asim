@@ -57,12 +57,12 @@ public class XmppService extends Service {
 				XmppAccount config = configs[0];
 
 				Log.i(TAG, "trying to connect to " + config.host);
-				AbstractXMPPConnection conn = new XMPPTCPConnection(config.host);
+				AbstractXMPPConnection conn = new XMPPTCPConnection(new ConnectionConfiguration(config.host, config.port));
 
 				try {
 					conn.connect();
 					Log.i(TAG, "trying to login for " + config.user);
-					conn.login(config.user, config.password);
+					conn.login(config.user, config.password, config.resource);
 					return conn;
 				} catch (SmackException e) {
 					Log.e(TAG, "Error connecting", e);
