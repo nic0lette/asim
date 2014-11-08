@@ -31,7 +31,7 @@ public class XmppService extends Service {
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
 		Log.i(TAG, "Started with start id " + startId + ": " + intent);
-		connect();
+		connect(new XmppServiceConnectionConfiguration("0xxon.net", "smacktest", "thisIsThePasswordForSmacktest"));
 
 		// continue running until stopped
 		return START_STICKY;
@@ -42,34 +42,44 @@ public class XmppService extends Service {
 		super.onDestroy();
 	}
 
-	private void connect() {
-		new AsyncTask<Void, Void, AbstractXMPPConnection>() {
+	private void connect(final XmppServiceConnectionConfiguration conf) {
+		new AsyncTask<XmppServiceConnectionConfiguration, Void, AbstractXMPPConnection>() {
 			@Override
-			protected AbstractXMPPConnection doInBackground(final Void... params) {
-				AbstractXMPPConnection conn = new XMPPTCPConnection("0xxon.net");
+			protected AbstractXMPPConnection doInBackground(final XmppServiceConnectionConfiguration... configs) {
+				Log.i(TAG, "In doInBackground");
 
-				Log.i(TAG, "trying to connect...");
-				try {
-					conn.connect();
-					Log.i(TAG, "trying to login...");
-					conn.login("smacktest", "thisIsThePasswordForSmacktest");
-					return conn;
-				} catch (SmackException e) {
-					Log.e(TAG, "Error connecting", e);
-				} catch (IOException e) {
-					Log.e(TAG, "Error connecting", e);
-				} catch (XMPPException e) {
-					Log.e(TAG, "Error connecting", e);
+				if ( configs.length != 1 ) {
+					Log.e(TAG, "Wrong number of connection configurations in connect");
+					assert(false);
 				}
 
-				return null;
-			}
+				XmppServiceConnectionConfiguration config = configs[0];
+
+				Log.i(TAG, "trying to connect to " + config.service);
+                AbstractXMPPConnection conn = new XMPPTCPConnection(config.service);
+
+                try {
+                    conn.connect();
+                    Log.i(TAG, "trying to login...");
+                    conn.login(config.user, config.password);
+                    return conn;
+                } catch (SmackException e) {
+                    Log.e(TAG, "Error connecting", e);
+                } catch (IOException e) {
+                    Log.e(TAG, "Error connecting", e);
+                } catch (XMPPException e) {
+                    Log.e(TAG, "Error connecting", e);
+                }
+
+                return null;
+            }
+
 
 			@Override
 			protected void onPostExecute(final AbstractXMPPConnection connection) {
 				onConnected(connection);
 			}
-		}.execute((Void) null);
+		}.execute(conf);
 
 	}
 
@@ -86,6 +96,18 @@ public class XmppService extends Service {
 		Log.i(TAG, "Duming roster");
 		for ( RosterEntry e : roster.getEntries() ) {
 			Log.i(TAG, "User " + e.getName() + "(" + e.getUser() + ")" + e.getGroups());
+		}
+	}
+
+	public static class XmppServiceConnectionConfiguration {
+		public final String service;
+		public final String user;
+		public final String password;
+
+		public XmppServiceConnectionConfiguration(String service, String user, String password) {
+			this.service = service;
+			this.user = user;
+			this.password = password;
 		}
 	}
 }
