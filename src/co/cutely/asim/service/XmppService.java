@@ -56,23 +56,23 @@ public class XmppService extends Service {
 				XmppServiceConnectionConfiguration config = configs[0];
 
 				Log.i(TAG, "trying to connect to " + config.service);
-                AbstractXMPPConnection conn = new XMPPTCPConnection(config.service);
+				AbstractXMPPConnection conn = new XMPPTCPConnection(config.service);
 
-                try {
-                    conn.connect();
-                    Log.i(TAG, "trying to login...");
-                    conn.login(config.user, config.password);
-                    return conn;
-                } catch (SmackException e) {
-                    Log.e(TAG, "Error connecting", e);
-                } catch (IOException e) {
-                    Log.e(TAG, "Error connecting", e);
-                } catch (XMPPException e) {
-                    Log.e(TAG, "Error connecting", e);
-                }
+				try {
+					conn.connect();
+					Log.i(TAG, "trying to login...");
+					conn.login(config.user, config.password);
+					return conn;
+				} catch (SmackException e) {
+					Log.e(TAG, "Error connecting", e);
+				} catch (IOException e) {
+					Log.e(TAG, "Error connecting", e);
+				} catch (XMPPException e) {
+					Log.e(TAG, "Error connecting", e);
+				}
 
-                return null;
-            }
+				return null;
+			}
 
 
 			@Override
