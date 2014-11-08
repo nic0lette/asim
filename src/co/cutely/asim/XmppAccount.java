@@ -5,6 +5,7 @@ package co.cutely.asim;
  */
 public class XmppAccount {
 	public final String xmppId;
+	public final String user;
 	public final String password;
 	public final String host;
 	public final int port;
@@ -26,18 +27,21 @@ public class XmppAccount {
 		this.xmppId = xmppId;
 		this.password = password;
 
+		int hostSeparator = xmppId.indexOf('@');
+		if (hostSeparator == -1) {
+			throw new IllegalArgumentException("XMPP ID must contain an '@'");
+		}
+
 		/*
 		 * If the hostname is null pull it from the ID
 		 */
 		if (host == null || host.isEmpty()) {
-			int hostSeparator = xmppId.indexOf('@');
-			if (hostSeparator == -1) {
-				throw new IllegalArgumentException("XMPP ID must contain an '@'");
-			}
 			this.host = xmppId.substring(hostSeparator + 1);
 		} else {
 			this.host = host;
 		}
+
+		this.user = xmppId.substring(0, hostSeparator);
 
 		this.port = port;
 		this.resource = (resource != null && !resource.isEmpty()) ? resource : DEFAULT_RESOURCE;

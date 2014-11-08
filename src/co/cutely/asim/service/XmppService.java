@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
+import co.cutely.asim.XmppAccount;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
@@ -31,7 +32,7 @@ public class XmppService extends Service {
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
 		Log.i(TAG, "Started with start id " + startId + ": " + intent);
-		connect(new XmppServiceConnectionConfiguration("0xxon.net", "smacktest", "thisIsThePasswordForSmacktest"));
+		connect(new XmppAccount("smacktest@0xxon.net", "thisIsThePasswordForSmacktest"));
 
 		// continue running until stopped
 		return START_STICKY;
@@ -42,10 +43,10 @@ public class XmppService extends Service {
 		super.onDestroy();
 	}
 
-	private void connect(final XmppServiceConnectionConfiguration conf) {
-		new AsyncTask<XmppServiceConnectionConfiguration, Void, AbstractXMPPConnection>() {
+	private void connect(final XmppAccount conf) {
+		new AsyncTask<XmppAccount, Void, AbstractXMPPConnection>() {
 			@Override
-			protected AbstractXMPPConnection doInBackground(final XmppServiceConnectionConfiguration... configs) {
+			protected AbstractXMPPConnection doInBackground(final XmppAccount... configs) {
 				Log.i(TAG, "In doInBackground");
 
 				if ( configs.length != 1 ) {
@@ -53,14 +54,14 @@ public class XmppService extends Service {
 					assert(false);
 				}
 
-				XmppServiceConnectionConfiguration config = configs[0];
+				XmppAccount config = configs[0];
 
-				Log.i(TAG, "trying to connect to " + config.service);
-				AbstractXMPPConnection conn = new XMPPTCPConnection(config.service);
+				Log.i(TAG, "trying to connect to " + config.host);
+				AbstractXMPPConnection conn = new XMPPTCPConnection(config.host);
 
 				try {
 					conn.connect();
-					Log.i(TAG, "trying to login...");
+					Log.i(TAG, "trying to login for " + config.user);
 					conn.login(config.user, config.password);
 					return conn;
 				} catch (SmackException e) {
@@ -99,15 +100,4 @@ public class XmppService extends Service {
 		}
 	}
 
-	public static class XmppServiceConnectionConfiguration {
-		public final String service;
-		public final String user;
-		public final String password;
-
-		public XmppServiceConnectionConfiguration(String service, String user, String password) {
-			this.service = service;
-			this.user = user;
-			this.password = password;
-		}
-	}
 }
