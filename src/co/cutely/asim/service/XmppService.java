@@ -47,10 +47,11 @@ public class XmppService extends Service {
 	private void connect() {
 		AbstractXMPPConnection conn = new XMPPTCPConnection("0xxon.net");
 
-		Log.i("XMPPService", "trying to connect...");
+		Log.i("XmppService", "trying to connect...");
 		try {
 			conn.connect();
-			conn.login("smacktest", "thisIsThePasswordForSmacktest");
+			Log.i("XmppService", "trying to login...");
+			//conn.login("smacktest", "thisIsThePasswordForSmacktest");
 		} catch (SmackException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
