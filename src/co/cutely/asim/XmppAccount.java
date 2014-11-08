@@ -16,7 +16,7 @@ public class XmppAccount {
 	}
 
 	public XmppAccount(String xmppId, String password, String host, int port) {
-		this(xmppId, password, host, port, "");
+		this(xmppId, password, host, port, null);
 	}
 
 	public XmppAccount(String xmppId, String password, String host, int port, String resource) {
