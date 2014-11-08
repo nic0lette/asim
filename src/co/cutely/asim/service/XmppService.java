@@ -19,6 +19,8 @@ import java.io.IOException;
  * Created by nicole on 11/4/14.
  */
 public class XmppService extends Service {
+	private static final String TAG = XmppService.class.getSimpleName();
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
@@ -31,7 +33,7 @@ public class XmppService extends Service {
 
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
-		Log.i("XmppService", "Started with start id " + startId + ": " + intent);
+		Log.i(TAG, "Started with start id " + startId + ": " + intent);
 		connect();
 
 		// continue running until stopped
@@ -51,18 +53,18 @@ public class XmppService extends Service {
 			protected AbstractXMPPConnection doInBackground(final Void... params) {
 				AbstractXMPPConnection conn = new XMPPTCPConnection("0xxon.net");
 
-				Log.i("XmppService", "trying to connect...");
+				Log.i(TAG, "trying to connect...");
 				try {
 					conn.connect();
-					Log.i("XmppService", "trying to login...");
+					Log.i(TAG, "trying to login...");
 					conn.login("smacktest", "thisIsThePasswordForSmacktest");
 					return conn;
 				} catch (SmackException e) {
-					e.printStackTrace();
+					Log.e(TAG, "Error connecting", e);
 				} catch (IOException e) {
-					e.printStackTrace();
+					Log.e(TAG, "Error connecting", e);
 				} catch (XMPPException e) {
-					e.printStackTrace();
+					Log.e(TAG, "Error connecting", e);
 				}
 
 				return null;
@@ -77,6 +79,10 @@ public class XmppService extends Service {
 	}
 
 	private void onConnected(AbstractXMPPConnection connection) {
-
+		if (connection != null) {
+			Log.i(TAG, "Connected!");
+		} else {
+			Log.i(TAG, "Didn't connect =(");
+		}
 	}
 }
