@@ -2,6 +2,7 @@ package co.cutely.asim.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 import org.jivesoftware.smack.AbstractXMPPConnection;
@@ -45,20 +46,37 @@ public class XmppService extends Service {
 	}
 
 	private void connect() {
-		AbstractXMPPConnection conn = new XMPPTCPConnection("0xxon.net");
+		new AsyncTask<Void, Void, AbstractXMPPConnection>() {
+			@Override
+			protected AbstractXMPPConnection doInBackground(final Void... params) {
+				AbstractXMPPConnection conn = new XMPPTCPConnection("0xxon.net");
 
-		Log.i("XmppService", "trying to connect...");
-		try {
-			conn.connect();
-			Log.i("XmppService", "trying to login...");
-			//conn.login("smacktest", "thisIsThePasswordForSmacktest");
-		} catch (SmackException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (XMPPException e) {
-			e.printStackTrace();
-		}
+				Log.i("XmppService", "trying to connect...");
+				try {
+					conn.connect();
+					Log.i("XmppService", "trying to login...");
+					conn.login("smacktest", "thisIsThePasswordForSmacktest");
+					return conn;
+				} catch (SmackException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (XMPPException e) {
+					e.printStackTrace();
+				}
+
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(final AbstractXMPPConnection connection) {
+				onConnected(connection);
+			}
+		}.execute((Void) null);
+
+	}
+
+	private void onConnected(AbstractXMPPConnection connection) {
 
 	}
 }
