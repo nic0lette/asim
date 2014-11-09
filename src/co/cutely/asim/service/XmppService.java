@@ -3,6 +3,7 @@ package co.cutely.asim.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import co.cutely.asim.XmppAccount;
@@ -18,10 +19,11 @@ import java.io.IOException;
  */
 public class XmppService extends Service {
 	private static final String TAG = XmppService.class.getSimpleName();
+	private final IBinder xmppBinder = new XmppBinder();
 
 	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
+	public IBinder onBind(Intent intent){
+		return xmppBinder;
 	}
 
 	@Override
@@ -97,6 +99,12 @@ public class XmppService extends Service {
 		Log.i(TAG, "Duming roster");
 		for ( RosterEntry e : roster.getEntries() ) {
 			Log.i(TAG, "User " + e.getName() + "(" + e.getUser() + ")" + e.getGroups());
+		}
+	}
+
+	public class XmppBinder extends Binder {
+		public XmppService getService() {
+			return XmppService.this;
 		}
 	}
 
