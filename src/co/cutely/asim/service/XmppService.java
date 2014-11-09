@@ -120,6 +120,7 @@ public class XmppService extends Service {
 					Log.e(TAG, "Error connecting", e);
 				}
 
+				// Since there may be multiple accounts, report each connect attempt  as it finishes
 				publishProgress(connection);
 			}
 
