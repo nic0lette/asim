@@ -96,13 +96,12 @@ public class XmppService extends Service {
 		protected Void doInBackground(final XmppAccount... configs) {
 			Log.i(TAG, "In doInBackground");
 
-			ConnectionTuple[] connection = new ConnectionTuple[1];
 
 			for (final XmppAccount config : configs) {
 				Log.i(TAG, "trying to connect to " + config.host);
 
 				// To easily check for failures
-				connection[0] = new ConnectionTuple(config, null);
+				ConnectionTuple connection = new ConnectionTuple(config, null);
 
 				AbstractXMPPConnection conn = new XMPPTCPConnection(
 						new ConnectionConfiguration(config.host, config.port));
@@ -111,7 +110,7 @@ public class XmppService extends Service {
 					conn.connect();
 					Log.i(TAG, "trying to login for " + config.user);
 					conn.login(config.user, config.password, config.resource);
-					connection[0] = new ConnectionTuple(config, conn);
+					connection = new ConnectionTuple(config, conn);
 				} catch (SmackException e) {
 					Log.e(TAG, "Error connecting", e);
 				} catch (IOException e) {
