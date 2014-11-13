@@ -56,7 +56,7 @@ public class XmppService extends Service {
 	 *
 	 * @param conf The account to connect
 	 */
-	private void connect(final XmppAccount conf) {
+	public void connect(final XmppAccount conf) {
 		if ( connectionMap.containsKey(conf.xmppId) ) {
 			Log.w(TAG, "There already is a connection for xmpp ID " + conf.xmppId + "; ignoring");
 			return;
@@ -81,7 +81,49 @@ public class XmppService extends Service {
 		new XmppConnectTask().execute(confsArray);
 	}
 
-	private void onConnected(XmppConnection connection) {
+	/**
+	 * Returns the list of currently connected accounts
+	 *
+	 * @return list of currently connected accounts
+	 */
+	public XmppAccount[] getConnectedAccounts() {
+		XmppAccount[] accounts = new XmppAccount[connectionMap.size()];
+		int i = 0;
+		for ( Map.Entry<String, XmppConnection> e : connectionMap.entrySet() ) {
+			accounts[i++] = e.getValue().account;
+		}
+
+		return accounts;
+	}
+
+	/**
+	 * Returns the xmpp IDs of the currently connected accounts
+	 *
+	 * @return xmpp IDs of currently connected accounts
+	 */
+	public Set<String> getConnectedAccountNames() {
+		return connectionMap.keySet();
+	}
+
+	/**
+	 * Get the account roster for a specified xmpp ID.
+	 *
+	 * @param xmppId the xmpp account to get the roster for. Has to be connected.
+	 * @return list of users currently on the account roster.
+	 */
+	public Set<XmppUser> getAccountRoster(final String xmppId) {
+		final XmppConnection conn = connectionMap.get(xmppId);
+		if ( conn == null ) {
+			Log.w(TAG, "Someone tried to read the account roster of " + xmppId + " which is not connected");
+			return null;
+		}
+
+		final Set<XmppUser> userList = new HashSet<XmppUser>();
+		userList.addAll(conn.userMap.values());
+		return userList;
+	}
+
+	private void onConnected(final XmppConnection connection) {
 		Log.i(TAG, "Connected to " + connection.conn.getServiceName() + " with " + connection.account.xmppId);
 
 		if ( connectionMap.containsKey(connection.account.xmppId) ) {
@@ -119,6 +161,10 @@ public class XmppService extends Service {
 		}
 	}
 
+	/**
+	 * This class should potentially go into global scope instead of being
+	 * a subclass here.
+	 */
 	public class XmppUser {
 		public final String id;
 		public String name;
