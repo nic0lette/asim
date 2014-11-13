@@ -11,8 +11,7 @@ import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Service handling all XMPP connection logic
@@ -20,6 +19,13 @@ import java.util.List;
 public class XmppService extends Service {
 	private static final String TAG = XmppService.class.getSimpleName();
 	private final IBinder xmppBinder = new XmppBinder();
+
+	/**
+	 * The Xmpp service needs to be aware of the currently active users because the rest
+	 * of the application might be suspended or whatever. To be able to update the list (e.g.
+	 * status, groups) due to incoming messages, we keep it indexed by account ID.
+	 */
+	private Map<String, XmppUser> userList = new HashMap<String, XmppUser>();
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -74,10 +80,24 @@ public class XmppService extends Service {
 		Log.i(TAG, "Connected to " + conn.getServiceName() + " with " + conn.getUser());
 
 		Roster roster = conn.getRoster();
-
-		Log.i(TAG, "Roster for " + account.xmppId + ":");
 		for (RosterEntry e : roster.getEntries()) {
-			Log.i(TAG, "User " + e.getName() + "(" + e.getUser() + ")" + e.getGroups());
+			// first - check if the user is already online on another account. If yes, just
+			// add the current account to it and merge the list of groups. Otherwise - add user
+			// to list.
+
+			XmppUser u = userList.get(e.getUser());
+			if ( u == null ) {
+				Set<String> accounts = new HashSet<String>();
+				accounts.add(conn.getUser());
+				Set<String> groups = new HashSet<String>();
+				for ( RosterGroup groupEntry : e.getGroups() )
+					groups.add(groupEntry.getName());
+				u = new XmppUser(e.getUser(), e.getName(), groups, accounts);
+			} else {
+				u.accounts.add(conn.getUser());
+				for ( RosterGroup groupEntry : e.getGroups() )
+					u.groups.add(groupEntry.getName());
+			}
 		}
 	}
 
@@ -91,14 +111,37 @@ public class XmppService extends Service {
 		}
 	}
 
+	public class XmppUser {
+		public final String id;
+		public String name;
+		// the groups the user is a member of
+		public Set<String> groups;
+		// the accounts a user is available on. This might be several, if the same user is
+		// added to several xmpp IDs that we are online with.
+		public Set<String> accounts;
+
+		public XmppUser(String id, String name, Set<String> groups, Set<String> accounts) {
+			this.id = id;
+
+			if ( name == null )
+				this.name = id;
+			else
+				this.name = name;
+
+			this.groups = groups;
+			this.accounts = accounts;
+		}
+
+		// TODO: we are missing a few important parts here. E.g., at the  moment we have
+		// no way to determine if a user is busy, etc. But - that will hopefully come :)
+	}
+
 	private class XmppConnectTask extends AsyncTask<XmppAccount, Object, Void> {
 		@Override
 		protected Void doInBackground(final XmppAccount... configs) {
-			Log.i(TAG, "In doInBackground");
-
 
 			for (final XmppAccount config : configs) {
-				Log.i(TAG, "trying to connect to " + config.host);
+				Log.i(TAG, "Trying to connect to " + config.host);
 
 				// To easily check for failures
 				ConnectionTuple connection = new ConnectionTuple(config, null);
@@ -108,7 +151,7 @@ public class XmppService extends Service {
 
 				try {
 					conn.connect();
-					Log.i(TAG, "trying to login for " + config.user);
+					Log.i(TAG, "Trying to login for " + config.user + " at " + config.host + " with " + config.resource);
 					conn.login(config.user, config.password, config.resource);
 					connection = new ConnectionTuple(config, conn);
 				} catch (SmackException e) {
