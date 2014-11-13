@@ -21,11 +21,11 @@ public class XmppService extends Service {
 	private final IBinder xmppBinder = new XmppBinder();
 
 	/**
-	 * The Xmpp service needs to be aware of the currently active users because the rest
-	 * of the application might be suspended or whatever. To be able to update the list (e.g.
-	 * status, groups) due to incoming messages, we keep it indexed by account ID.
+	 * The Xmpp service needs to be aware of the currently active connections
+	 * and all currently active users. All this is tracked through the connection
+	 * map, which is indexed by the account name used for the connection.
 	 */
-	private Map<String, XmppUser> userList = new HashMap<String, XmppUser>();
+	private Map<String, XmppConnection> connectionMap = new HashMap<String, XmppConnection>();
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -57,6 +57,11 @@ public class XmppService extends Service {
 	 * @param conf The account to connect
 	 */
 	private void connect(final XmppAccount conf) {
+		if ( connectionMap.containsKey(conf.xmppId) ) {
+			Log.w(TAG, "There already is a connection for xmpp ID " + conf.xmppId + "; ignoring");
+			return;
+		}
+
 		final List<XmppAccount> confs = new ArrayList<XmppAccount>(1);
 		confs.add(conf);
 		connect(confs);
@@ -76,29 +81,32 @@ public class XmppService extends Service {
 		new XmppConnectTask().execute(confsArray);
 	}
 
-	private void onConnected(XmppAccount account, AbstractXMPPConnection conn) {
-		Log.i(TAG, "Connected to " + conn.getServiceName() + " with " + conn.getUser());
+	private void onConnected(XmppConnection connection) {
+		Log.i(TAG, "Connected to " + connection.conn.getServiceName() + " with " + connection.account.xmppId);
 
+		if ( connectionMap.containsKey(connection.account.xmppId) ) {
+			Log.e(TAG, "Duplicate connection was established for " + connection.account.xmppId + "; aborting new connection");
+			try {
+				connection.conn.disconnect();
+			} catch (SmackException.NotConnectedException e) {
+				Log.e(TAG, "second connection was not established after all?", e);
+			}
+			return;
+		}
+
+		final AbstractXMPPConnection conn = connection.conn;
 		Roster roster = conn.getRoster();
 		for (RosterEntry e : roster.getEntries()) {
-			// first - check if the user is already online on another account. If yes, just
-			// add the current account to it and merge the list of groups. Otherwise - add user
-			// to list.
+			Set<String> groups = new HashSet<String>();
 
-			XmppUser u = userList.get(e.getUser());
-			if ( u == null ) {
-				Set<String> accounts = new HashSet<String>();
-				accounts.add(conn.getUser());
-				Set<String> groups = new HashSet<String>();
-				for ( RosterGroup groupEntry : e.getGroups() )
-					groups.add(groupEntry.getName());
-				u = new XmppUser(e.getUser(), e.getName(), groups, accounts);
-			} else {
-				u.accounts.add(conn.getUser());
-				for ( RosterGroup groupEntry : e.getGroups() )
-					u.groups.add(groupEntry.getName());
-			}
+			for ( RosterGroup groupEntry : e.getGroups() )
+				groups.add(groupEntry.getName());
+
+			XmppUser u = new XmppUser(e.getUser(), e.getName(), groups);
+			connection.userMap.put(e.getUser(), u);
 		}
+
+		connectionMap.put(connection.account.xmppId, connection);
 	}
 
 	private void onConnectFail(XmppAccount account) {
@@ -116,11 +124,8 @@ public class XmppService extends Service {
 		public String name;
 		// the groups the user is a member of
 		public Set<String> groups;
-		// the accounts a user is available on. This might be several, if the same user is
-		// added to several xmpp IDs that we are online with.
-		public Set<String> accounts;
 
-		public XmppUser(String id, String name, Set<String> groups, Set<String> accounts) {
+		public XmppUser(String id, String name, Set<String> groups) {
 			this.id = id;
 
 			if ( name == null )
@@ -129,22 +134,38 @@ public class XmppService extends Service {
 				this.name = name;
 
 			this.groups = groups;
-			this.accounts = accounts;
 		}
 
 		// TODO: we are missing a few important parts here. E.g., at the  moment we have
 		// no way to determine if a user is busy, etc. But - that will hopefully come :)
 	}
 
-	private class XmppConnectTask extends AsyncTask<XmppAccount, Object, Void> {
+	private class XmppConnection {
+		public final XmppAccount account;
+		public final AbstractXMPPConnection conn;
+		// the Roster information for the current account
+		public Map<String, XmppUser> userMap = new HashMap<String, XmppUser>();
+
+		private XmppConnection(XmppAccount account, AbstractXMPPConnection conn) {
+			this.account = account;
+			this.conn = conn;
+		}
+	}
+
+	private class XmppConnectTask extends AsyncTask<XmppAccount, XmppConnection, Void> {
 		@Override
 		protected Void doInBackground(final XmppAccount... configs) {
 
 			for (final XmppAccount config : configs) {
 				Log.i(TAG, "Trying to connect to " + config.host);
 
+				if ( connectionMap.containsKey(config.xmppId) ) {
+					Log.w(TAG, "Connection to " + config.xmppId + " was already established in the past, ignoring");
+					continue;
+				}
+
 				// To easily check for failures
-				ConnectionTuple connection = new ConnectionTuple(config, null);
+				XmppConnection connection = new XmppConnection(config, null);
 
 				AbstractXMPPConnection conn = new XMPPTCPConnection(
 						new ConnectionConfiguration(config.host, config.port));
@@ -153,7 +174,7 @@ public class XmppService extends Service {
 					conn.connect();
 					Log.i(TAG, "Trying to login for " + config.user + " at " + config.host + " with " + config.resource);
 					conn.login(config.user, config.password, config.resource);
-					connection = new ConnectionTuple(config, conn);
+					connection = new XmppConnection(config, conn);
 				} catch (SmackException e) {
 					Log.e(TAG, "Error connecting", e);
 				} catch (IOException e) {
@@ -171,35 +192,19 @@ public class XmppService extends Service {
 		}
 
 		@Override
-		protected void onProgressUpdate(final Object... values) {
+		protected void onProgressUpdate(final XmppConnection... values) {
 			super.onProgressUpdate(values);
 
 			if (values == null || values.length != 1) {
 				throw new IllegalStateException("Somehow progress was published without a connection tuple");
 			}
-			if (values[0] instanceof ConnectionTuple) {
-				ConnectionTuple tuple = (ConnectionTuple) values[0];
-				if (tuple.connection != null) {
-					onConnected(tuple.account, tuple.connection);
-				} else {
-					onConnectFail(tuple.account);
-				}
+			XmppConnection connection = (XmppConnection) values[0];
+			if (connection.conn != null) {
+				onConnected(connection);
 			} else {
-				throw new IllegalStateException("Somehow progress was published but was not a connection tuple");
+				onConnectFail(connection.account);
 			}
 		}
 
-		/**
-		 * Internal helper class
-		 */
-		private class ConnectionTuple {
-			public final XmppAccount account;
-			public final AbstractXMPPConnection connection;
-
-			public ConnectionTuple(XmppAccount account, AbstractXMPPConnection connection) {
-				this.account = account;
-				this.connection = connection;
-			}
-		}
 	}
 }
