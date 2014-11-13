@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.util.Log;
 import co.cutely.asim.XmppAccount;
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
 import java.io.IOException;
@@ -138,17 +139,21 @@ public class XmppService extends Service {
 
 		final AbstractXMPPConnection conn = connection.conn;
 		final Roster roster = conn.getRoster();
-		for (RosterEntry e : roster.getEntries()) {
-			final Set<String> groups = new HashSet<String>();
+		for (RosterEntry e : roster.getEntries())
+			connection.userMap.put(e.getUser(), rosterEntryToUser(e));
 
-			for ( RosterGroup groupEntry : e.getGroups() )
-				groups.add(groupEntry.getName());
-
-			final XmppUser u = new XmppUser(e.getUser(), e.getName(), groups);
-			connection.userMap.put(e.getUser(), u);
-		}
-
+		roster.addRosterListener(new XmppRosterListener(connection, roster));
 		connectionMap.put(connection.account.xmppId, connection);
+	}
+
+	private XmppUser rosterEntryToUser(final RosterEntry entry) {
+		final Set<String> groups = new HashSet<String>();
+
+		for ( RosterGroup groupEntry : entry.getGroups() )
+			groups.add(groupEntry.getName());
+
+		final XmppUser u = new XmppUser(entry.getUser(), entry.getName(), groups);
+		return u;
 	}
 
 	private void onConnectFail(XmppAccount account) {
@@ -190,7 +195,7 @@ public class XmppService extends Service {
 		public final XmppAccount account;
 		public final AbstractXMPPConnection conn;
 		// the Roster information for the current account
-		public Map<String, XmppUser> userMap = new HashMap<String, XmppUser>();
+		public final Map<String, XmppUser> userMap = new HashMap<String, XmppUser>();
 
 		private XmppConnection(XmppAccount account, AbstractXMPPConnection conn) {
 			this.account = account;
@@ -252,5 +257,38 @@ public class XmppService extends Service {
 			}
 		}
 
+	}
+
+	private class XmppRosterListener implements RosterListener {
+		private final XmppConnection connection;
+		private final Roster roster;
+
+		private XmppRosterListener(XmppConnection connection, Roster roster) {
+			this.connection = connection;
+			this.roster = roster;
+		}
+
+		@Override
+		public void entriesAdded(Collection<String> addresses) {
+			for ( String address : addresses )
+				connection.userMap.put(address, rosterEntryToUser(roster.getEntry(address)));
+		}
+
+		@Override
+		public void entriesUpdated(Collection<String> addresses) {
+			for ( String address : addresses )
+				connection.userMap.put(address, rosterEntryToUser(roster.getEntry(address)));
+		}
+
+		@Override
+		public void entriesDeleted(Collection<String> addresses) {
+			for ( String address : addresses )
+				connection.userMap.remove(address);
+		}
+
+		@Override
+		public void presenceChanged(Presence presence) {
+			// TODO: we do not store presence information yet
+		}
 	}
 }
