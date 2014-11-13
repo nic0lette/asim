@@ -87,7 +87,7 @@ public class XmppService extends Service {
 	 * @return list of currently connected accounts
 	 */
 	public XmppAccount[] getConnectedAccounts() {
-		XmppAccount[] accounts = new XmppAccount[connectionMap.size()];
+		final XmppAccount[] accounts = new XmppAccount[connectionMap.size()];
 		int i = 0;
 		for ( Map.Entry<String, XmppConnection> e : connectionMap.entrySet() ) {
 			accounts[i++] = e.getValue().account;
@@ -137,14 +137,14 @@ public class XmppService extends Service {
 		}
 
 		final AbstractXMPPConnection conn = connection.conn;
-		Roster roster = conn.getRoster();
+		final Roster roster = conn.getRoster();
 		for (RosterEntry e : roster.getEntries()) {
-			Set<String> groups = new HashSet<String>();
+			final Set<String> groups = new HashSet<String>();
 
 			for ( RosterGroup groupEntry : e.getGroups() )
 				groups.add(groupEntry.getName());
 
-			XmppUser u = new XmppUser(e.getUser(), e.getName(), groups);
+			final XmppUser u = new XmppUser(e.getUser(), e.getName(), groups);
 			connection.userMap.put(e.getUser(), u);
 		}
 
@@ -244,7 +244,7 @@ public class XmppService extends Service {
 			if (values == null || values.length != 1) {
 				throw new IllegalStateException("Somehow progress was published without a connection tuple");
 			}
-			XmppConnection connection = (XmppConnection) values[0];
+			final XmppConnection connection = (XmppConnection) values[0];
 			if (connection.conn != null) {
 				onConnected(connection);
 			} else {
