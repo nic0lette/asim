@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/root"
 	android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+	android:layout_height="fill_parent"
+	android:layout_weight="3"
+	android:animateLayoutChanges="true"
+	android:background="@color/asim_white"
+	android:orientation="vertical">
 
-	<TextView
-		android:layout_width="fill_parent"
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="@dimen/large_header"
+		android:background="@color/asim_primary" />
+
+	<ImageView
+		android:id="@+id/add_button"
+		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="Hello World, MainActivity" />
-</LinearLayout>
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentRight="true"
+		android:layout_margin="@dimen/icon_keyline"
+		android:background="@drawable/ic_circle_primary_48dp"
+		android:src="@drawable/ic_add_white_48dp"
+		android:visibility="gone"/>
+
+</RelativeLayout>
 

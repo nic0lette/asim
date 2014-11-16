@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="asim_primary">#9c27b0</color>
+	<color name="asim_dark">#6a1b9a</color>
+	<color name="asim_light">#ce93d8</color>
+	<color name="asim_accent">#ffc107</color>
+	<color name="asim_white">#f0f0f0</color>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="large_header">176dp</dimen>
+	<dimen name="large_header_icon_48dp_margin">152dp</dimen>
+
+	<dimen name="icon_keyline">16dp</dimen>
+	<dimen name="content_keyline">72dp</dimen>
+</resources>
