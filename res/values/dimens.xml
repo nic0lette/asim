@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<dimen name="large_header">176dp</dimen>
-	<dimen name="large_header_icon_48dp_margin">152dp</dimen>
+	<dimen name="large_header_icon_48dp_margin">148dp</dimen>
 
     <dimen name="common_icon_size">32dp</dimen>
     <dimen name="common_icon_margin">8dp</dimen>

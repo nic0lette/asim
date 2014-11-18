@@ -1,98 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-	android:id="@+id/root"
+<RelativeLayout android:id="@+id/root"
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	android:layout_weight="3"
 	android:animateLayoutChanges="true"
 	android:background="@color/asim_white"
 	android:orientation="vertical">
 
-	<TextView
-		android:id="@+id/header"
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/large_header"
-		android:background="@color/asim_primary"
-		android:gravity="bottom"
-		android:paddingBottom="@dimen/min_margin"
-		android:paddingLeft="@dimen/content_keyline"
-		android:paddingRight="@dimen/icon_keyline"
-		android:text="@string/account_add_title"
-		android:textColor="@color/asim_white"
-		android:textSize="@dimen/font_leading_4" />
-
-	<include
-		android:id="@+id/add_button"
-		layout="@layout/floating_action_button"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentRight="true"
-		android:layout_marginLeft="@dimen/icon_keyline"
-		android:layout_marginRight="@dimen/icon_keyline"
-		android:layout_marginTop="@dimen/large_header_icon_48dp_margin" />
-
-	<EditText
-		android:id="@+id/login"
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/content_row_small"
-		android:layout_below="@+id/add_button"
-		android:layout_marginBottom="@dimen/min_margin"
-		android:layout_marginLeft="@dimen/content_keyline"
-		android:layout_marginRight="@dimen/icon_keyline"
-		android:layout_marginTop="@dimen/min_margin"
-		android:gravity="center_vertical"
-		android:hint="@string/account_add_login"
-		android:imeOptions="actionNext"
-		android:inputType="textEmailAddress"
-		android:singleLine="true"
-		android:textSize="@dimen/font_type_4" />
-
-	<EditText
-		android:id="@+id/password"
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/content_row_small"
-		android:layout_below="@+id/login"
-		android:layout_marginBottom="@dimen/min_margin"
-		android:layout_marginLeft="@dimen/content_keyline"
-		android:layout_marginRight="@dimen/icon_keyline"
-		android:layout_marginTop="@dimen/min_margin"
-		android:gravity="center_vertical"
-		android:hint="@string/account_add_password"
-		android:imeOptions="actionNext"
-		android:inputType="textPassword"
-		android:singleLine="true"
-		android:textSize="@dimen/font_type_4" />
-
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/navigation_bar"
-		android:layout_alignParentBottom="true"
-		android:background="@color/asim_light"
-		android:gravity="center_vertical">
-
-		<TextView
-			android:layout_width="0dp"
-			android:layout_height="match_parent"
-			android:layout_weight="1"
-			android:gravity="center_vertical|right"
-			android:text="@string/account_add_next"
-			android:textColor="@color/asim_white"
-			android:textSize="@dimen/font_type_4" />
-
-		<ImageView
-			android:id="@+id/next"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:layout_margin="@dimen/common_icon_margin"
-			android:src="@drawable/ic_navigate_next_white_36dp" />
-	</LinearLayout>
-
-	<View
-		android:layout_width="@dimen/common_button_touchable"
-		android:layout_height="@dimen/common_button_touchable"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentRight="true" />
 </RelativeLayout>
 

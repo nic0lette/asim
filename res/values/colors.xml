@@ -3,10 +3,14 @@
 	<color name="asim_primary">#9c27b0</color>
 	<color name="asim_dark">#6a1b9a</color>
 	<color name="asim_light">#ce93d8</color>
-	<color name="asim_accent">#ffc107</color>
+	<color name="asim_accent">#ffffc107</color>
 
 	<color name="asim_white">#f0f0f0</color>
 	<color name="asim_black">#757575</color>
+
+	<color name="text_hint">#757575</color>
+	<color name="text_input">#4f4f4f</color>
+	<color name="text_error">#ff0000</color>
 
 	<!-- Floating Action Button -->
 	<color name="fab_shadow">#20000000</color>
