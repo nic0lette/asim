@@ -6,8 +6,10 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import co.cutely.asim.Database;
 import co.cutely.asim.XmppAccount;
 import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
@@ -20,6 +22,8 @@ import java.util.*;
 public class XmppService extends Service {
 	private static final String TAG = XmppService.class.getSimpleName();
 	private final IBinder xmppBinder = new XmppBinder();
+
+	private Database db;
 
 	/**
 	 * The Xmpp service needs to be aware of the currently active connections
@@ -36,6 +40,8 @@ public class XmppService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		db = new Database(this);
 	}
 
 	@Override
@@ -80,6 +86,27 @@ public class XmppService extends Service {
 		}
 
 		new XmppConnectTask().execute(confsArray);
+	}
+
+	/**
+	 * Disconnects a single, currently connected account
+	 *
+	 * @param account the account to disconnect
+	 */
+	public void disconnect(final String account) {
+		XmppConnection conn = connectionMap.get(account);
+
+		if ( conn == null ) {
+			Log.w(TAG, "Trying to disconnect nonexistant connection: "+account);
+			return;
+		}
+
+		try {
+			conn.conn.disconnect();
+		} catch (SmackException.NotConnectedException e) {
+			Log.e(TAG, "Disconnected already disconnected connection for "+account, e);
+		}
+		connectionMap.remove(account);
 	}
 
 	/**
@@ -143,6 +170,9 @@ public class XmppService extends Service {
 			connection.userMap.put(e.getUser(), rosterEntryToUser(e));
 
 		roster.addRosterListener(new XmppRosterListener(connection, roster));
+
+		ChatManager.getInstanceFor(conn).addChatListener(new XmppChatManagerListener(connection));
+
 		connectionMap.put(connection.account.xmppId, connection);
 	}
 
@@ -164,6 +194,10 @@ public class XmppService extends Service {
 		public XmppService getService() {
 			return XmppService.this;
 		}
+
+		/* public Database getDb() {
+			return db;
+		} */
 	}
 
 	/**
@@ -289,6 +323,33 @@ public class XmppService extends Service {
 		@Override
 		public void presenceChanged(Presence presence) {
 			// TODO: we do not store presence information yet
+		}
+	}
+
+	private final class XmppChatManagerListener implements ChatManagerListener {
+		private final XmppConnection connection;
+
+		private XmppChatManagerListener(XmppConnection connection) {
+			this.connection = connection;
+		}
+
+		@Override
+		public void chatCreated(Chat chat, boolean createdLocally) {
+			if ( !createdLocally )
+				chat.addMessageListener(new XmppChatMessageListener(connection));
+		}
+	}
+
+	private class XmppChatMessageListener implements ChatMessageListener {
+		private final XmppConnection connection;
+
+		private XmppChatMessageListener(XmppConnection connection) {
+			this.connection = connection;
+		}
+
+		@Override
+		public void processMessage(Chat chat, Message message) {
+			Log.i(TAG, "Incoming message from "+chat.getParticipant()+": "+message);
 		}
 	}
 }

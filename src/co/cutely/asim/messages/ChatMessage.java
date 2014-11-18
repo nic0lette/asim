@@ -20,10 +20,10 @@ package co.cutely.asim.messages;
  *
  */
 public class ChatMessage {
-	public final int id;
-	public final int ts;
-	public final int xmpp_id; // we probably need to do this differently later...
-	public final int xmpp_target;
+	public final long id;
+	public final long ts;
+	public final String xmpp_id; // we probably need to do this differently later...
+	public final String xmpp_target;
 	public final boolean sender;
 	public final boolean processed;
 	public final String message;
@@ -31,8 +31,7 @@ public class ChatMessage {
 	public final boolean otr;
 
 
-	public ChatMessage(int id, int ts, int xmpp_id, int xmpp_target, boolean sender,
-			boolean processed,
+	public ChatMessage(long id, long ts, String xmpp_id, String xmpp_target, boolean sender, boolean processed,
 			String message, boolean xhtml, boolean otr) {
 		this.id = id;
 		this.ts = ts;
