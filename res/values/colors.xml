@@ -4,5 +4,10 @@
 	<color name="asim_dark">#6a1b9a</color>
 	<color name="asim_light">#ce93d8</color>
 	<color name="asim_accent">#ffc107</color>
+
 	<color name="asim_white">#f0f0f0</color>
+	<color name="asim_black">#757575</color>
+
+	<!-- Floating Action Button -->
+	<color name="fab_shadow">#20000000</color>
 </resources>

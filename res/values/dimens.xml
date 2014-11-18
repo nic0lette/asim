@@ -3,7 +3,10 @@
 	<dimen name="large_header">176dp</dimen>
 	<dimen name="large_header_icon_48dp_margin">152dp</dimen>
 
-    <dimen name="action_icon_size">48dp</dimen>
+    <dimen name="common_icon_size">32dp</dimen>
+    <dimen name="common_icon_margin">8dp</dimen>
+
+    <dimen name="common_button_touchable">56dp</dimen>
 
     <dimen name="min_margin">8dp</dimen>
 
@@ -12,6 +15,7 @@
 
     <dimen name="content_row">72dp</dimen>
     <dimen name="content_row_small">48dp</dimen>
+    <dimen name="navigation_bar">48dp</dimen>
 
     <!-- Fonts -->
     <dimen name="font_leading_3">32sp</dimen>
@@ -20,4 +24,9 @@
     <dimen name="font_leading_4">28sp</dimen>
     <dimen name="font_type_4">16sp</dimen>
     <dimen name="font_type_4_sub">15sp</dimen>
+
+    <!-- Floating Action Button -->
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="fab_shadow_size">2dp</dimen>
+    <dimen name="fab_ai_margin">16dp</dimen>
 </resources>
