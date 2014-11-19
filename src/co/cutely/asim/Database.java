@@ -45,7 +45,7 @@ public class Database  {
         long id = db.insert(context.getString(R.string.message_table_name), null, values);
         long ts = System.currentTimeMillis()/1000;
 
-        Log.i(TAG, "Inserted message " + id + " into database:" + message);
+        Log.i(TAG, "Inserted message " + id + " into database: " + message);
 
         return new ChatMessage(id, ts, xmpp_id, xmpp_target, sender, processed, message, xhtml, otr);
     }

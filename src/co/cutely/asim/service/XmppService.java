@@ -349,7 +349,13 @@ public class XmppService extends Service {
 
 		@Override
 		public void processMessage(Chat chat, Message message) {
-			Log.i(TAG, "Incoming message from "+chat.getParticipant()+": "+message);
+			Log.i(TAG, "Incoming raw message: "+message);
+			Log.i(TAG, "Incoming " + message.getType().name() + " message from "+chat.getParticipant()+": "+message.getBody());
+			if ( message.getBody() == null )
+				// we simply ignore null messages (e.g. thread establishment) for the moment
+				return;
+
+			db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, message.getBody(), false, false);
 		}
 	}
 }
