@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.util.Log;
 import co.cutely.asim.Database;
 import co.cutely.asim.XmppAccount;
+import co.cutely.asim.messages.ChatMessage;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
@@ -165,6 +166,8 @@ public class XmppService extends Service {
 		if (c == null)
 			c = ChatManager.getInstanceFor(conn.conn).createChat(target, new XmppChatMessageListener(conn));
 
+		final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, false);
+
 		try {
 			c.sendMessage(message);
 		} catch (XMPPException e) {
@@ -173,6 +176,8 @@ public class XmppService extends Service {
 		} catch (SmackException.NotConnectedException e) {
 			throw new AccountNotConnectedException("Account "+xmppId+" in connection Map, but not currently connected", e);
 		}
+
+		db.setProcessed(cm.id);
 	}
 
 	private XmppConnection getConnection(final String xmppId) throws AccountNotConnectedException {
@@ -196,7 +201,7 @@ public class XmppService extends Service {
 	private static String stripResource(final String account) {
 		final int separator = account.indexOf('/');
 
-		return account.substring(separator+1);
+		return account.substring(0, separator);
 	}
 
 	private void onConnected(final XmppConnection connection) {
@@ -243,6 +248,9 @@ public class XmppService extends Service {
 			return XmppService.this;
 		}
 
+		// FIXME: not quite sure if we want to expose the DB directly or have functions
+		// to do whatever the front end wants directly.
+		// I am tending towards exposing it though...
 		/* public Database getDb() {
 			return db;
 		} */

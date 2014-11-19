@@ -50,6 +50,13 @@ public class Database  {
         return new ChatMessage(id, ts, xmpp_id, xmpp_target, sender, processed, message, xhtml, otr);
     }
 
+    public void setProcessed(long id) {
+        ContentValues values = new ContentValues();
+        values.put("processed", true);
+
+        db.update(context.getString(R.string.message_table_name), values, "ROWID = ?", new String[] {String.valueOf(id)});
+    }
+
     public class DatabaseHelper extends SQLiteOpenHelper {
         private final Context context;
         public static final String DATABASE_NAME = "asim.db";
