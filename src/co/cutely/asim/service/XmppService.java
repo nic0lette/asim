@@ -138,17 +138,65 @@ public class XmppService extends Service {
 	 *
 	 * @param xmppId the xmpp account to get the roster for. Has to be connected.
 	 * @return list of users currently on the account roster.
+	 * @throws AccountNotConnectedException
 	 */
-	public Set<XmppUser> getAccountRoster(final String xmppId) {
-		final XmppConnection conn = connectionMap.get(xmppId);
-		if ( conn == null ) {
-			Log.w(TAG, "Someone tried to read the account roster of " + xmppId + " which is not connected");
-			return null;
-		}
+	public Set<XmppUser> getAccountRoster(final String xmppId) throws AccountNotConnectedException  {
+		final XmppConnection conn = getConnection(xmppId);
 
 		final Set<XmppUser> userList = new HashSet<XmppUser>();
 		userList.addAll(conn.userMap.values());
 		return userList;
+	}
+
+	/**
+	 * Sends an xmpp message from a specific account to a specific user
+	 *
+	 * @param xmppId the account to send the message from. Has to be connected at the Moment.
+	 * @param target the account to send the message to.
+	 * @param message the message to send.
+	 * @throws AccountNotConnectedException
+	 */
+	public void sendMessage(final String xmppId, String target, final String message) throws AccountNotConnectedException {
+		final XmppConnection conn = getConnection(xmppId);
+
+		target = stripResource(target);
+		Chat c = conn.chatMap.get(target);
+
+		if (c == null)
+			c = ChatManager.getInstanceFor(conn.conn).createChat(target, new XmppChatMessageListener(conn));
+
+		try {
+			c.sendMessage(message);
+		} catch (XMPPException e) {
+			// FIXME: this will be another exception
+			Log.e(TAG, "Sending message failed", e);
+		} catch (SmackException.NotConnectedException e) {
+			throw new AccountNotConnectedException("Account "+xmppId+" in connection Map, but not currently connected", e);
+		}
+	}
+
+	private XmppConnection getConnection(final String xmppId) throws AccountNotConnectedException {
+		final XmppConnection conn = connectionMap.get(xmppId);
+		if (conn == null)
+			throw new AccountNotConnectedException("Account "+xmppId+" is not currently connected");
+
+		return conn;
+	}
+
+	/**
+	 * Remove the resource information from an account, if present.
+	 *
+	 * e.g. testuser@testdomain.org/asmin -> testuser@testdomain.org
+	 *
+	 * This might belong into a different class
+	 *
+	 * @param account the account name to strip the roster from
+	 * @return account name without roster
+	 */
+	private static String stripResource(final String account) {
+		final int separator = account.indexOf('/');
+
+		return account.substring(separator+1);
 	}
 
 	private void onConnected(final XmppConnection connection) {
@@ -225,11 +273,15 @@ public class XmppService extends Service {
 		// no way to determine if a user is busy, etc. But - that will hopefully come :)
 	}
 
-	private class XmppConnection {
+	private static class XmppConnection {
 		public final XmppAccount account;
 		public final AbstractXMPPConnection conn;
 		// the Roster information for the current account
 		public final Map<String, XmppUser> userMap = new HashMap<String, XmppUser>();
+
+		// the currently active Chats for the account
+		// maps xmpp ID of the chat partner to Chat instances
+		public final Map<String, Chat> chatMap = new HashMap<String, Chat>();
 
 		private XmppConnection(XmppAccount account, AbstractXMPPConnection conn) {
 			this.account = account;
@@ -237,7 +289,7 @@ public class XmppService extends Service {
 		}
 	}
 
-	private class XmppConnectTask extends AsyncTask<XmppAccount, XmppConnection, Void> {
+	private final class XmppConnectTask extends AsyncTask<XmppAccount, XmppConnection, Void> {
 		@Override
 		protected Void doInBackground(final XmppAccount... configs) {
 
@@ -293,7 +345,7 @@ public class XmppService extends Service {
 
 	}
 
-	private class XmppRosterListener implements RosterListener {
+	private final class XmppRosterListener implements RosterListener {
 		private final XmppConnection connection;
 		private final Roster roster;
 
@@ -335,12 +387,15 @@ public class XmppService extends Service {
 
 		@Override
 		public void chatCreated(Chat chat, boolean createdLocally) {
+
+			connection.chatMap.put(stripResource(chat.getParticipant()), chat);
+
 			if ( !createdLocally )
 				chat.addMessageListener(new XmppChatMessageListener(connection));
 		}
 	}
 
-	private class XmppChatMessageListener implements ChatMessageListener {
+	private final class XmppChatMessageListener implements ChatMessageListener {
 		private final XmppConnection connection;
 
 		private XmppChatMessageListener(XmppConnection connection) {
