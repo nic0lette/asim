@@ -13,6 +13,7 @@ import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
+import org.jivesoftware.smackx.xhtmlim.XHTMLManager;
 
 import java.io.IOException;
 import java.util.*;
@@ -418,7 +419,14 @@ public class XmppService extends Service {
 				// we simply ignore null messages (e.g. thread establishment) for the moment
 				return;
 
-			db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, message.getBody(), false, false);
+			if (XHTMLManager.isXHTMLMessage(message)) {
+				List<CharSequence> bodies = XHTMLManager.getBodies(message);
+				for (CharSequence body : bodies) {
+					db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, body.toString(), false, false);
+				}
+			} else {
+				db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, message.getBody(), false, false);
+			}
 		}
 	}
 }

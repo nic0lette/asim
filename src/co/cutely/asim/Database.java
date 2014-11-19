@@ -29,6 +29,18 @@ public class Database  {
         dbHelper = null;
     }
 
+    /**
+     * Create a new chat message and store it in the database
+     *
+     * @param xmpp_id name of the xmpp account on the client (in asim)
+     * @param xmpp_target name of the remote xmpp account
+     * @param sender true if we sent the message
+     * @param processed true if the message was succesfully sent or succesfully displayed in asim
+     * @param message message content
+     * @param xhtml true if message is formatted using xhtml
+     * @param otr true if message was sent / received otr encrypted
+     * @return completely constructed chatmessage
+     */
     public ChatMessage createChatMessage(String xmpp_id, String xmpp_target, boolean sender, boolean processed,
                                          String message, boolean xhtml, boolean otr) {
         Log.i(TAG, "Starting database insert");
@@ -50,11 +62,30 @@ public class Database  {
         return new ChatMessage(id, ts, xmpp_id, xmpp_target, sender, processed, message, xhtml, otr);
     }
 
-    public void setProcessed(long id) {
+    /**
+     * Set the processed flag of the messages with the given ids to true
+     *
+     * @param ids messages to set as processed
+     */
+    public void setProcessed(final long[] ids) {
         ContentValues values = new ContentValues();
         values.put("processed", true);
 
-        db.update(context.getString(R.string.message_table_name), values, "ROWID = ?", new String[] {String.valueOf(id)});
+        String[] stringIds = new String[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            stringIds[i] = String.valueOf(ids[i]);
+        }
+
+        db.update(context.getString(R.string.message_table_name), values, "ROWID = ?", stringIds);
+    }
+
+    /**
+     * Set the processed flag of the message with the given id to true
+     *
+     * @param id message to set as processed
+     */
+    public void setProcessed(final long id) {
+        setProcessed(new long[] {id});
     }
 
     public class DatabaseHelper extends SQLiteOpenHelper {
