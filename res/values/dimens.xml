@@ -17,7 +17,12 @@
     <dimen name="content_row_small">48dp</dimen>
     <dimen name="navigation_bar">48dp</dimen>
 
+    <!-- Registration -->
+    <dimen name="reg_heading_bottom_margin">24dp</dimen>
+
     <!-- Fonts -->
+    <dimen name="font_headline">24sp</dimen>
+
     <dimen name="font_leading_3">32sp</dimen>
     <dimen name="font_type_3">24sp</dimen>
 

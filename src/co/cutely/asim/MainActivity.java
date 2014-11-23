@@ -19,13 +19,12 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import co.cutely.asim.registration.RegistrationActivity;
 import co.cutely.asim.service.XmppService;
 
 public class MainActivity extends Activity {
 	private XmppService xmppService;
 	private static final String TAG = MainActivity.class.getSimpleName();
-
-	private RelativeLayout root;
 
 	/**
 	 * Called when the activity is first created.
@@ -34,8 +33,6 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
-		root = (RelativeLayout) findViewById(R.id.root);
 	}
 
 	@Override
@@ -45,18 +42,14 @@ public class MainActivity extends Activity {
 		Log.i(TAG, "Binding xmppService");
 		Intent intent = new Intent(this, XmppService.class);
 		bindService(intent, xmppServiceConncetion, Context.BIND_AUTO_CREATE);
-
-		root.removeAllViews();
-
-		final AddAccountStart start = new AddAccountStart();
-		final FragmentTransaction transaction = getFragmentManager().beginTransaction();
-		transaction.add(R.id.root, start);
-		transaction.commit();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		final Intent reg = new Intent(this, RegistrationActivity.class);
+		startActivityForResult(reg, 0);
 	}
 
 	@Override

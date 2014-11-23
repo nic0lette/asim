@@ -16,12 +16,12 @@
 		android:layout_height="@dimen/large_header"
 		android:background="@color/asim_primary"
 		android:gravity="bottom"
-		android:paddingBottom="@dimen/min_margin"
+		android:paddingBottom="@dimen/reg_heading_bottom_margin"
 		android:paddingLeft="@dimen/content_keyline"
 		android:paddingRight="@dimen/icon_keyline"
 		android:text="@string/account_add_title"
 		android:textColor="@color/asim_white"
-		android:textSize="@dimen/font_leading_4" />
+		android:textSize="@dimen/font_headline" />
 
 	<co.cutely.asim.view.FloatingActionButton
 		android:id="@+id/add_button"
@@ -35,7 +35,7 @@
 		cutely:actionDrawable="@drawable/ic_add_white_24dp"
 		cutely:color="@color/asim_accent" />
 
-	<EditText
+	<co.cutely.asim.view.CheckedEditText
 		android:id="@+id/login"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/content_row_small"
@@ -52,7 +52,7 @@
 		android:textColor="@color/asim_black"
 		android:textSize="@dimen/font_type_4" />
 
-	<EditText
+	<co.cutely.asim.view.CheckedEditText
 		android:id="@+id/password"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/content_row_small"
@@ -69,37 +69,13 @@
 		android:textColor="@color/asim_black"
 		android:textSize="@dimen/font_type_4" />
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="@dimen/navigation_bar"
-		android:layout_alignParentBottom="true"
-		android:background="@color/asim_light"
-		android:gravity="center_vertical">
-
-		<TextView
-			android:layout_width="0dp"
-			android:layout_height="match_parent"
-			android:layout_weight="1"
-			android:gravity="center_vertical|right"
-			android:text="@string/account_add_next"
-			android:textColor="@color/asim_white"
-			android:textSize="@dimen/font_type_4" />
-
-		<ImageView
-			android:id="@+id/next_arrow"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical"
-			android:layout_margin="@dimen/common_icon_margin"
-			android:src="@drawable/ic_navigate_next_white_36dp" />
-	</LinearLayout>
-
-	<View
+	<ImageView
 		android:id="@+id/next"
 		android:layout_width="@dimen/common_button_touchable"
+		android:layout_below="@+id/password"
+		android:layout_alignRight="@+id/password"
 		android:layout_height="@dimen/common_button_touchable"
-		android:layout_alignParentBottom="true"
-		android:layout_alignParentRight="true"
+		android:src="@drawable/ic_navigate_next_grey600_36dp"
 		android:clickable="true" />
 </RelativeLayout>
 

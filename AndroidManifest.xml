@@ -26,6 +26,11 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<activity
+			android:name=".registration.RegistrationActivity"
+			android:theme="@style/Theme.Asim.NoActionBar" />
+
 		<service android:name=".service.XmppService" />
 	</application>
 </manifest>
