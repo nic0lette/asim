@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
-import co.cutely.asim.Database;
 import co.cutely.asim.XmppAccount;
 import co.cutely.asim.messages.ChatMessage;
 import net.java.otr4j.OtrEngineHost;
@@ -287,13 +286,6 @@ public class XmppService extends Service {
 		public XmppService getService() {
 			return XmppService.this;
 		}
-
-		// FIXME: not quite sure if we want to expose the DB directly or have functions
-		// to do whatever the front end wants directly.
-		// I am tending towards exposing it though...
-		/* public Database getDb() {
-			return db;
-		} */
 	}
 
 	/**

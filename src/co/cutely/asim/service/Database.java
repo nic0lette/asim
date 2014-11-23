@@ -1,16 +1,17 @@
-package co.cutely.asim;
+package co.cutely.asim.service;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import co.cutely.asim.R;
 import co.cutely.asim.messages.ChatMessage;
 
 /**
  * Class handling all the Database logic, including table creation, etc.
  */
-public class Database  {
+/* package */ class Database  {
     private static final String TAG = Database.class.getSimpleName();
 
     private final Context context;
