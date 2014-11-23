@@ -9,6 +9,12 @@ import android.util.Log;
 import co.cutely.asim.Database;
 import co.cutely.asim.XmppAccount;
 import co.cutely.asim.messages.ChatMessage;
+import net.java.otr4j.OtrEngineHost;
+import net.java.otr4j.OtrException;
+import net.java.otr4j.OtrPolicy;
+import net.java.otr4j.OtrPolicyImpl;
+import net.java.otr4j.crypto.OtrCryptoEngineImpl;
+import net.java.otr4j.session.*;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
@@ -16,6 +22,9 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smackx.xhtmlim.XHTMLManager;
 
 import java.io.IOException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -49,7 +58,7 @@ public class XmppService extends Service {
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
 		Log.i(TAG, "Started with start id " + startId + ": " + intent);
-		connect(new XmppAccount("smacktest@0xxon.net", "thisIsThePasswordForSmacktest"));
+		connect(new XmppAccount("smacktest@0xxon.net", "thisIsThePasswordForSmacktes"));
 
 		// continue running until stopped
 		return START_STICKY;
@@ -167,17 +176,33 @@ public class XmppService extends Service {
 		if (c == null)
 			c = ChatManager.getInstanceFor(conn.conn).createChat(target, new XmppChatMessageListener(conn));
 
-		final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, false);
+		String[] outmessages;
 
-		try {
-			c.sendMessage(message);
-		} catch (XMPPException e) {
-			// FIXME: this will be another exception
-			Log.e(TAG, "Sending message failed", e);
-		} catch (SmackException.NotConnectedException e) {
-			throw new AccountNotConnectedException("Account "+xmppId+" in connection Map, but not currently connected", e);
+		final Session otrSession = conn.getOtrSession(target, false);
+		if ( otrSession != null ) {
+			try {
+				outmessages = otrSession.transformSending(message);
+			} catch (OtrException e) {
+				Log.e(TAG, "OTR Transform error", e);
+				return;
+			}
+		} else {
+			outmessages = new String[1];
+			outmessages[0] = message;
 		}
 
+		final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, otrSession != null);
+
+		for ( String m : outmessages ) {
+			try {
+				c.sendMessage(m);
+			} catch (XMPPException e) {
+				// FIXME: this will be another exception
+				Log.e(TAG, "Sending message failed", e);
+			} catch (SmackException.NotConnectedException e) {
+				throw new AccountNotConnectedException("Account " + xmppId + " in connection Map, but not currently connected", e);
+			}
+		}
 		db.setProcessed(cm.id);
 	}
 
@@ -201,6 +226,9 @@ public class XmppService extends Service {
 	 */
 	private static String stripResource(final String account) {
 		final int separator = account.indexOf('/');
+
+		if ( separator == -1 )
+			return account;
 
 		return account.substring(0, separator);
 	}
@@ -282,7 +310,7 @@ public class XmppService extends Service {
 		// no way to determine if a user is busy, etc. But - that will hopefully come :)
 	}
 
-	private static class XmppConnection {
+	private class XmppConnection {
 		public final XmppAccount account;
 		public final AbstractXMPPConnection conn;
 		// the Roster information for the current account
@@ -292,9 +320,34 @@ public class XmppService extends Service {
 		// maps xmpp ID of the chat partner to Chat instances
 		public final Map<String, Chat> chatMap = new HashMap<String, Chat>();
 
+		// the currently active OTR session for the account
+		// maps xmpp ID of the chat partner to OTR sessions.
+		// I might want to merge this with chatMap at some point of time, not quite sure yet.
+		private final Map<String, Session> sessionMap = new HashMap<String, Session>();
+
 		private XmppConnection(XmppAccount account, AbstractXMPPConnection conn) {
 			this.account = account;
 			this.conn = conn;
+		}
+
+		/**
+		 * Get the OTR session for the chosen client ID.
+		 *
+		 * @param xmppId client ID to get session for.
+		 * @param create create session if it does not exist yet. If false, function can return null.
+		 * @return session of null if no session exists yet and create is false.
+		 */
+		public Session getOtrSession(String xmppId, final boolean create) {
+			xmppId = stripResource(xmppId);
+			Session s = sessionMap.get(xmppId);
+			if ( s != null || !create )
+				return s;
+
+			Log.i(TAG, "Created otr session "+account.xmppId+" -> "+xmppId);
+			final SessionID sId = new SessionID(account.xmppId, xmppId, "XMPP");
+			s = new SessionImpl(sId, new XmppOtrEngineHost(new OtrPolicyImpl(OtrPolicy.OPPORTUNISTIC)));
+			sessionMap.put(xmppId, s);
+			return s;
 		}
 	}
 
@@ -414,19 +467,156 @@ public class XmppService extends Service {
 		@Override
 		public void processMessage(Chat chat, Message message) {
 			Log.i(TAG, "Incoming raw message: "+message);
-			Log.i(TAG, "Incoming " + message.getType().name() + " message from "+chat.getParticipant()+": "+message.getBody());
-			if ( message.getBody() == null )
+			Log.i(TAG, "Incoming "+message.getType().name()+" message from "+chat.getParticipant()+": "+message.getBody());
+			if (message.getBody() == null)
 				// we simply ignore null messages (e.g. thread establishment) for the moment
 				return;
+
+			if (message.getBody().startsWith("?OTR")) {
+				Log.i(TAG, "Forwarding message to OTR...");
+				Session s = connection.getOtrSession(chat.getParticipant(), true);
+				try {
+					String otrmessage = s.transformReceiving(message.getBody());
+					Log.i(TAG, "OTR decoded message: "+otrmessage);
+					if ( otrmessage != null )
+						db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, otrmessage, false, true);
+				} catch (OtrException e) {
+					Log.e(TAG, "OTR error in processMessage", e);
+				}
+				return;
+			}
 
 			if (XHTMLManager.isXHTMLMessage(message)) {
 				List<CharSequence> bodies = XHTMLManager.getBodies(message);
 				for (CharSequence body : bodies) {
-					db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, body.toString(), false, false);
+					db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, body.toString(), true, false);
 				}
 			} else {
 				db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, message.getBody(), false, false);
 			}
+		}
+	}
+
+	private final class XmppOtrEngineHost implements OtrEngineHost {
+		private final OtrPolicy policy;
+
+		private XmppOtrEngineHost(OtrPolicy policy) {
+			Log.i(TAG, "OTR engine host instantiated");
+			this.policy = policy;
+		}
+
+		@Override
+		public void injectMessage(SessionID sessionID, String msg) throws OtrException {
+			Log.w(TAG, "OTR inject message from "+ sessionID.getAccountID() + " to "+sessionID.getUserID()+": "+msg);
+			try {
+				sendMessage(sessionID.getAccountID(), sessionID.getUserID(), msg);
+			} catch (AccountNotConnectedException e) {
+				throw new OtrException(e);
+			}
+		}
+
+		@Override
+		public void unreadableMessageReceived(SessionID sessionID) throws OtrException {
+			Log.w(TAG, "OTR received unreadable message");
+		}
+
+		@Override
+		public void unencryptedMessageReceived(SessionID sessionID, String msg) throws OtrException {
+			Log.i(TAG, "OTR received unencrypted message "+msg);
+		}
+
+		@Override
+		public void showError(SessionID sessionID, String error) throws OtrException {
+			Log.e(TAG, "OTR error: "+error);
+		}
+
+		@Override
+		public void smpError(SessionID sessionID, int tlvType, boolean cheated) throws OtrException {
+			Log.e(TAG, "OTR smp Error: "+tlvType);
+		}
+
+		@Override
+		public void smpAborted(SessionID sessionID) throws OtrException {
+			Log.w(TAG, "OTR smp Aborted");
+		}
+
+		@Override
+		public void finishedSessionMessage(SessionID sessionID, String msgText) throws OtrException {
+			Log.i(TAG, "OTR finished session message: "+msgText);
+		}
+
+		@Override
+		public void requireEncryptedMessage(SessionID sessionID, String msgText) throws OtrException {
+			Log.i(TAG, "OTR require encrypted message: "+msgText);
+		}
+
+		@Override
+		public OtrPolicy getSessionPolicy(SessionID sessionID) {
+			return policy;
+		}
+
+		@Override
+		public FragmenterInstructions getFragmenterInstructions(SessionID sessionID) {
+			Log.i(TAG, "OTR getFragmenterIcstructions");
+			return null;
+		}
+
+		@Override
+		public KeyPair getLocalKeyPair(SessionID sessionID) throws OtrException {
+			KeyPairGenerator kg;
+			try {
+				kg = KeyPairGenerator.getInstance("DSA");
+			} catch (NoSuchAlgorithmException e) {
+				Log.e(TAG, "No such algorithm when trying to create key pair", e);
+				return null;
+			}
+			return kg.genKeyPair();
+		}
+
+		@Override
+		public byte[] getLocalFingerprintRaw(SessionID sessionID) {
+			try {
+				return new OtrCryptoEngineImpl().getFingerprintRaw(getLocalKeyPair(sessionID).getPublic());
+			} catch (OtrException e) {
+				Log.e(TAG, "Could not get key fingerprint", e);
+			}
+			return null;
+		}
+
+		@Override
+		public void askForSecret(SessionID sessionID, InstanceTag receiverTag, String question) {
+			Log.i(TAG, "OTR ask for secret: "+	question);
+		}
+
+		@Override
+		public void verify(SessionID sessionID, String fingerprint, boolean approved) {
+			Log.i(TAG, "OTR verify: "+fingerprint);
+		}
+
+		@Override
+		public void unverify(SessionID sessionID, String fingerprint) {
+			Log.i(TAG, "OTR unverify: "+fingerprint);
+		}
+
+		@Override
+		public String getReplyForUnreadableMessage(SessionID sessionID) {
+			Log.i(TAG, "OTR get reply for unreadable message");
+			return null;
+		}
+
+		@Override
+		public String getFallbackMessage(SessionID sessionID) {
+			return "An off-the-record private conversation has be requested which your client does not support";
+		}
+
+		@Override
+		public void messageFromAnotherInstanceReceived(SessionID sessionID) {
+			Log.i(TAG, "message from another instance received");
+		}
+
+		@Override
+		public void multipleInstancesDetected(SessionID sessionID) {
+			Log.i(TAG, "multiple instances detected");
 		}
 	}
 }
