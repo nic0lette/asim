@@ -168,6 +168,11 @@ public class XmppService extends Service {
 	 * @throws AccountNotConnectedException
 	 */
 	public void sendMessage(final String xmppId, String target, final String message) throws AccountNotConnectedException {
+		sendMessage(xmppId, target, message, false, false);
+	}
+
+
+	private void sendMessage(final String xmppId, String target, final String message, final boolean skipDb, final boolean skipOtr) throws AccountNotConnectedException {
 		final XmppConnection conn = getConnection(xmppId);
 
 		target = stripResource(target);
@@ -179,7 +184,7 @@ public class XmppService extends Service {
 		String[] outmessages;
 
 		final Session otrSession = conn.getOtrSession(target, false);
-		if ( otrSession != null ) {
+		if ( otrSession != null && !skipOtr ) {
 			try {
 				outmessages = otrSession.transformSending(message);
 			} catch (OtrException e) {
@@ -191,7 +196,11 @@ public class XmppService extends Service {
 			outmessages[0] = message;
 		}
 
-		final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, otrSession != null);
+		long cmid = -1;
+		if ( !skipDb ) {
+			final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, otrSession != null);
+			cmid = cm.id;
+		}
 
 		for ( String m : outmessages ) {
 			try {
@@ -203,7 +212,9 @@ public class XmppService extends Service {
 				throw new AccountNotConnectedException("Account " + xmppId + " in connection Map, but not currently connected", e);
 			}
 		}
-		db.setProcessed(cm.id);
+
+		if ( cmid > 0 )
+			db.setProcessed(cmid);
 	}
 
 	private XmppConnection getConnection(final String xmppId) throws AccountNotConnectedException {
@@ -474,12 +485,13 @@ public class XmppService extends Service {
 
 			if (message.getBody().startsWith("?OTR")) {
 				Log.i(TAG, "Forwarding message to OTR...");
+
 				Session s = connection.getOtrSession(chat.getParticipant(), true);
 				try {
 					String otrmessage = s.transformReceiving(message.getBody());
 					Log.i(TAG, "OTR decoded message: "+otrmessage);
 					if ( otrmessage != null )
-						db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, otrmessage, false, true);
+						db.createChatMessage(connection.account.xmppId, chat.getParticipant(), false, false, otrmessage, true, true);
 				} catch (OtrException e) {
 					Log.e(TAG, "OTR error in processMessage", e);
 				}
@@ -509,7 +521,7 @@ public class XmppService extends Service {
 		public void injectMessage(SessionID sessionID, String msg) throws OtrException {
 			Log.w(TAG, "OTR inject message from "+ sessionID.getAccountID() + " to "+sessionID.getUserID()+": "+msg);
 			try {
-				sendMessage(sessionID.getAccountID(), sessionID.getUserID(), msg);
+				sendMessage(sessionID.getAccountID(), sessionID.getUserID(), msg, true, true);
 			} catch (AccountNotConnectedException e) {
 				throw new OtrException(e);
 			}
