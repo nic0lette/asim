@@ -14,7 +14,8 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 
 /**
-* Created by johanna on 11/22/14.
+* This is the main OTR implementation where we get all the callbacks
+ * from otr4j.
 */
 /* package */ final class XmppOtrEngineHost implements OtrEngineHost {
     private static final String TAG = XmppOtrEngineHost.class.getSimpleName();

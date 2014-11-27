@@ -161,7 +161,7 @@ public final class XmppService extends Service {
 	 * @param message the message to send.
 	 * @throws AccountNotConnectedException
 	 */
-	public void sendMessage(final String xmppId, String target, final String message) throws AccountNotConnectedException {
+	public void sendMessage(final String xmppId, final String target, final String message) throws AccountNotConnectedException {
 		final XmppConnection conn = getConnection(xmppId);
 		String[] outmessages;
 
@@ -241,7 +241,7 @@ public final class XmppService extends Service {
 			try {
 				connection.conn.disconnect();
 			} catch (SmackException.NotConnectedException e) {
-				Log.e(TAG, "second connection was not established after all?", e);
+				Log.e(TAG, "Second connection was not established after all?", e);
 			}
 			return;
 		}
@@ -288,6 +288,9 @@ public final class XmppService extends Service {
 		// the groups the user is a member of
 		public Set<String> groups;
 
+		// the OTR session
+		public Session session = null;
+
 		public XmppUser(String id, String name, Set<String> groups) {
 			this.id = id;
 
@@ -313,11 +316,6 @@ public final class XmppService extends Service {
 		// maps xmpp ID of the chat partner to Chat instances
 		public final Map<String, Chat> chatMap = new HashMap<String, Chat>();
 
-		// the currently active OTR session for the account
-		// maps xmpp ID of the chat partner to OTR sessions.
-		// I might want to merge this with chatMap at some point of time, not quite sure yet.
-		private final Map<String, Session> sessionMap = new HashMap<String, Session>();
-
 		private XmppConnection(XmppAccount account, AbstractXMPPConnection conn) {
 			this.account = account;
 			this.conn = conn;
@@ -332,15 +330,20 @@ public final class XmppService extends Service {
 		 */
 		public Session getOtrSession(String xmppId, final boolean create) {
 			xmppId = stripResource(xmppId);
-			Session s = sessionMap.get(xmppId);
-			if ( s != null || !create )
-				return s;
+			XmppUser u = userMap.get(xmppId);
+
+			if ( u == null ) {
+				Log.e(TAG, "Trying to get OTR session for user "+xmppId+" on account "+account.xmppId+" who does not exist");
+				return null; // FIXME - throw (internal) exception
+			}
+
+			if ( u.session != null || !create )
+				return u.session;
 
 			Log.i(TAG, "Created otr session "+account.xmppId+" -> "+xmppId);
 			final SessionID sId = new SessionID(account.xmppId, xmppId, "XMPP");
-			s = new SessionImpl(sId, new XmppOtrEngineHost(XmppService.this, new OtrPolicyImpl(OtrPolicy.OPPORTUNISTIC)));
-			sessionMap.put(xmppId, s);
-			return s;
+			u.session = new SessionImpl(sId, new XmppOtrEngineHost(XmppService.this, new OtrPolicyImpl(OtrPolicy.OPPORTUNISTIC)));
+			return u.session;
 		}
 	}
 
