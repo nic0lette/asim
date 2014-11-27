@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 /**
 * Created by johanna on 11/22/14.
 */
-final class XmppOtrEngineHost implements OtrEngineHost {
+/* package */ final class XmppOtrEngineHost implements OtrEngineHost {
     private static final String TAG = XmppOtrEngineHost.class.getSimpleName();
     private XmppService xmppService;
     private final OtrPolicy policy;
@@ -31,7 +31,7 @@ final class XmppOtrEngineHost implements OtrEngineHost {
     public void injectMessage(SessionID sessionID, String msg) throws OtrException {
         Log.w(TAG, "OTR inject message from "+ sessionID.getAccountID() + " to "+sessionID.getUserID()+": "+msg);
         try {
-            xmppService.sendMessage(sessionID.getAccountID(), sessionID.getUserID(), msg, true, true);
+            xmppService.sendMessageRaw(sessionID.getAccountID(), sessionID.getUserID(), msg);
         } catch (AccountNotConnectedException e) {
             throw new OtrException(e);
         }
@@ -79,8 +79,7 @@ final class XmppOtrEngineHost implements OtrEngineHost {
 
     @Override
     public FragmenterInstructions getFragmenterInstructions(SessionID sessionID) {
-        Log.i(TAG, "OTR getFragmenterIcstructions");
-        return null;
+        return new FragmenterInstructions(FragmenterInstructions.UNLIMITED, FragmenterInstructions.UNLIMITED);
     }
 
     @Override
@@ -90,7 +89,7 @@ final class XmppOtrEngineHost implements OtrEngineHost {
             kg = KeyPairGenerator.getInstance("DSA");
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "No such algorithm when trying to create key pair", e);
-            return null;
+            throw new OtrException(e);
         }
         return kg.genKeyPair();
     }

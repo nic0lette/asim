@@ -11,7 +11,7 @@ import co.cutely.asim.messages.ChatMessage;
 /**
  * Class handling all the Database logic, including table creation, etc.
  */
-/* package */ class Database  {
+/* package */ final class Database  {
     private static final String TAG = Database.class.getSimpleName();
 
     private final Context context;

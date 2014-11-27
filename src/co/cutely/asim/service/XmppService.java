@@ -162,23 +162,11 @@ public final class XmppService extends Service {
 	 * @throws AccountNotConnectedException
 	 */
 	public void sendMessage(final String xmppId, String target, final String message) throws AccountNotConnectedException {
-		sendMessage(xmppId, target, message, false, false);
-	}
-
-
-	void sendMessage(final String xmppId, String target, final String message, final boolean skipDb, final boolean skipOtr) throws AccountNotConnectedException {
 		final XmppConnection conn = getConnection(xmppId);
-
-		target = stripResource(target);
-		Chat c = conn.chatMap.get(target);
-
-		if (c == null)
-			c = ChatManager.getInstanceFor(conn.conn).createChat(target, new XmppChatMessageListener(conn));
-
 		String[] outmessages;
 
 		final Session otrSession = conn.getOtrSession(target, false);
-		if ( otrSession != null && !skipOtr ) {
+		if ( otrSession != null ) {
 			try {
 				outmessages = otrSession.transformSending(message);
 			} catch (OtrException e) {
@@ -190,25 +178,32 @@ public final class XmppService extends Service {
 			outmessages[0] = message;
 		}
 
-		long cmid = -1;
-		if ( !skipDb ) {
-			final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, otrSession != null);
-			cmid = cm.id;
-		}
+		final ChatMessage cm = db.createChatMessage(conn.account.xmppId, target, true, false, message, false, otrSession != null);
 
 		for ( String m : outmessages ) {
-			try {
-				c.sendMessage(m);
-			} catch (XMPPException e) {
-				// FIXME: this will be another exception
-				Log.e(TAG, "Sending message failed", e);
-			} catch (SmackException.NotConnectedException e) {
-				throw new AccountNotConnectedException("Account " + xmppId + " in connection Map, but not currently connected", e);
-			}
+			sendMessageRaw(xmppId, target, message);
 		}
 
-		if ( cmid > 0 )
-			db.setProcessed(cmid);
+		db.setProcessed(cm.id);
+	}
+
+	public void sendMessageRaw(final String xmppId, String target, final String message) throws AccountNotConnectedException {
+		final XmppConnection conn = getConnection(xmppId);
+
+		target = stripResource(target);
+		Chat c = conn.chatMap.get(target);
+
+		if (c == null)
+			c = ChatManager.getInstanceFor(conn.conn).createChat(target, new XmppChatMessageListener(conn));
+
+		try {
+			c.sendMessage(message);
+		} catch (XMPPException e) {
+			// FIXME: this will be another exception
+			Log.e(TAG, "Sending message failed", e);
+		} catch (SmackException.NotConnectedException e) {
+			throw new AccountNotConnectedException("Account " + xmppId + " in connection Map, but not currently connected", e);
+		}
 	}
 
 	private XmppConnection getConnection(final String xmppId) throws AccountNotConnectedException {
