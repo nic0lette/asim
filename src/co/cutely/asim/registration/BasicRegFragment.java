@@ -1,6 +1,8 @@
 package co.cutely.asim.registration;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,7 +13,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import co.cutely.asim.AsimApplication;
+import co.cutely.asim.MainActivity;
 import co.cutely.asim.R;
+import co.cutely.asim.XmppAccount;
+import co.cutely.asim.service.AccountManager;
 import co.cutely.asim.view.CheckedEditText;
 
 import java.util.regex.Pattern;
@@ -56,6 +62,7 @@ public class BasicRegFragment extends Fragment {
 		passwordInput.setValidator(new CheckedEditText.Validator() {
 			@Override
 			public boolean isValid(final String content) {
+				Log.d("nicole", "Check: '" + content + "'");
 				return !content.isEmpty();
 			}
 		});
@@ -79,16 +86,36 @@ public class BasicRegFragment extends Fragment {
 	private View.OnClickListener nextOnClick = new View.OnClickListener() {
 		@Override
 		public void onClick(final View v) {
+			Log.d("nicole", "Click next");
+
 			// Show errors if they're needed
 			if (!loginInput.isValid()) {
+				Log.d("nicole", "Not valid: login");
 				loginInput.requestFocus();
 				return;
 			}
-
-			// Since the password check is so basic, do it here
 			if (!passwordInput.isValid()) {
+				Log.d("nicole", "Not valid: password");
 				passwordInput.requestFocus();
 				return;
+			}
+
+			// Create a basic account
+			final String user = loginInput.getValue();
+			final String password = passwordInput.getValue();
+			final XmppAccount account = new XmppAccount(user, password);
+
+			// Add and done!
+			final AccountManager manager = AsimApplication.get().getAccountManager();
+			manager.addAccount(account);
+
+			// Return to the main activity
+			final Activity activity = getActivity();
+			if (activity != null) {
+				startActivity(new Intent(activity, MainActivity.class));
+				Log.d("nicole", "Go back to Main");
+			} else {
+				Log.d("nicole", "Activity is null?");
 			}
 		}
 	};

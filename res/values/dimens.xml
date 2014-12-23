@@ -32,6 +32,7 @@
 
     <!-- Floating Action Button -->
     <dimen name="fab_size">56dp</dimen>
-    <dimen name="fab_shadow_size">2dp</dimen>
+    <dimen name="fab_margin">-28dp</dimen>
+    <dimen name="fab_shadow_size">3dp</dimen>
     <dimen name="fab_ai_margin">16dp</dimen>
 </resources>

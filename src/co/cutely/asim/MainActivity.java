@@ -22,9 +22,13 @@ import android.widget.RelativeLayout;
 import co.cutely.asim.registration.RegistrationActivity;
 import co.cutely.asim.service.XmppService;
 
+import java.util.List;
+
 public class MainActivity extends Activity {
 	private XmppService xmppService;
 	private static final String TAG = MainActivity.class.getSimpleName();
+
+	private List<XmppAccount> accounts;
 
 	/**
 	 * Called when the activity is first created.
@@ -33,6 +37,20 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+
+		// Get the list of accounts that could be active
+		final AsimApplication application = (AsimApplication) getApplication();
+		accounts = application.getAccountManager().getAccounts();
+
+		// Are there any accounts?
+		if (accounts.isEmpty()) {
+			// Nope! Better add one
+			startActivity(new Intent(this, RegistrationActivity.class));
+
+			// Nothing to do until there are accounts
+			Log.d("nicole", "No accounts - starting registration");
+			finish();
+		}
 	}
 
 	@Override
@@ -48,8 +66,6 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 
-		final Intent reg = new Intent(this, RegistrationActivity.class);
-		startActivityForResult(reg, 0);
 	}
 
 	@Override

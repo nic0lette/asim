@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -59,7 +58,11 @@ public class CheckedEditText extends EditText implements View.OnFocusChangeListe
 	 * @return {@code true} if the text is valid, {@code false} otherwise
 	 */
 	public boolean isValid() {
-		return validated;
+		return validator == null || validator.isValid(getText().toString());
+	}
+
+	public String getValue() {
+		return getText() != null ? getText().toString() : null;
 	}
 
 	/**

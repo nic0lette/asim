@@ -23,7 +23,12 @@ local.properties
 proguard/
 
 # Intellij files
-.idea/
+.idea/inspectionProfiles/Duplicate_Resources.xml
+.idea/codeStyleSettings.xml
+.idea/dictionaries/
+.idea/misc.xml
+.idea/tasks.xml
+.idea/workspace.xml
 
 # Maven libs
 hg-libs/

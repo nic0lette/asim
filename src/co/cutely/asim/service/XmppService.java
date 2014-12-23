@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import co.cutely.asim.AsimApplication;
 import co.cutely.asim.XmppAccount;
 import co.cutely.asim.messages.ChatMessage;
 import net.java.otr4j.OtrException;
@@ -52,7 +53,13 @@ public final class XmppService extends Service {
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
 		Log.i(TAG, "Started with start id " + startId + ": " + intent);
-		connect(new XmppAccount("smacktest@0xxon.net", "thisIsThePasswordForSmacktes"));
+
+		// Connect to accounts
+		final AccountManager accountManager = AsimApplication.get().getAccountManager();
+		final List<XmppAccount> accounts = accountManager.getAccounts();
+		connect(accounts);
+
+//		connect(new XmppAccount("smacktest@0xxon.net", "thisIsThePasswordForSmacktes"));
 
 		// continue running until stopped
 		return START_STICKY;

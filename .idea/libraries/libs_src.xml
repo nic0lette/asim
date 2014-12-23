@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="libs-src">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs-src/otr4j-0.21-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs-src/smack-resolver-minidns-4.1.0-alpha5-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs-src/smack-extensions-4.1.0-alpha5-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs-src/smack-core-4.1.0-alpha5-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs-src/smack-android-4.1.0-alpha5-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs-src/smack-tcp-4.1.0-alpha5-sources.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
