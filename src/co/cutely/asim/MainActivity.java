@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 			startActivity(new Intent(this, RegistrationActivity.class));
 
 			// Nothing to do until there are accounts
-			Log.d("nicole", "No accounts - starting registration");
+			Log.d(TAG, "No accounts found -- beginning registration");
 			finish();
 		}
 	}

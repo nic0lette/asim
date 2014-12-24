@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="large_header">176dp</dimen>
+	<dimen name="large_header_icon_48dp_margin">148dp</dimen>
+
+    <dimen name="common_icon_size">32dp</dimen>
+    <dimen name="common_icon_margin">8dp</dimen>
+
+    <dimen name="common_button_touchable">56dp</dimen>
+
+    <dimen name="smallest_margin">8dp</dimen>
+    <dimen name="small_margin">16dp</dimen>
+    <dimen name="standard_margin">32dp</dimen>
+
+	<dimen name="icon_keyline">16dp</dimen>
+	<dimen name="content_keyline">72dp</dimen>
+
+    <dimen name="content_row">72dp</dimen>
+    <dimen name="content_row_small">48dp</dimen>
+    <dimen name="navigation_bar">48dp</dimen>
+
+    <!-- Registration -->
+    <dimen name="reg_heading_bottom_margin">24dp</dimen>
+
+    <!-- Fonts -->
+    <dimen name="font_headline">24sp</dimen>
+
+    <dimen name="font_leading_3">32sp</dimen>
+    <dimen name="font_type_3">24sp</dimen>
+
+    <dimen name="font_leading_4">28sp</dimen>
+    <dimen name="font_type_4">16sp</dimen>
+
+    <dimen name="font_leading_5">24sp</dimen>
+    <dimen name="font_type_5">14sp</dimen>
+</resources>

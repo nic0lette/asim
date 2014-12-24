@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="Theme.Asim.Base" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="android:editTextStyle">@style/Theme.Asim.EditText</item>
+
+        <!-- colorPrimary is used for the default action bar background -->
+        <item name="colorPrimary">@color/primary</item>
+
+        <!-- colorPrimaryDark is used for the status bar -->
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+
+        <!-- colorAccent is used as the default value for colorControlActivated
+        which is used to tint widgets -->
+        <item name="colorAccent">@color/accent</item>
+
+        <!-- You can also set colorControlNormal, colorControlActivated
+        colorControlHighlight & colorSwitchThumbNormal. -->
+        <item name="colorControlNormal">@color/primary</item>
+        <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent</item>
+    </style>
+
+    <style name="Theme.Asim" parent="Theme.Asim.Base">
+    </style>
+
+    <style name="Theme.Asim.NoActionBar" parent="Theme.Asim.Base">
+        <item name="android:actionBarStyle">@null</item>
+    </style>
+
+    <style name="Theme.Asim.EditText" parent="@android:style/Widget.EditText">
+        <item name="android:background">@drawable/edit_text</item>
+        <item name="android:textColor">@color/primary_text</item>
+    </style>
+</resources>

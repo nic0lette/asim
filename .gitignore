@@ -35,3 +35,6 @@ hg-libs/
 
 # Log Files
 *.log
+
+# Junk files
+.DS_Store

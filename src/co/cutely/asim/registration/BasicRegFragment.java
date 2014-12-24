@@ -62,7 +62,6 @@ public class BasicRegFragment extends Fragment {
 		passwordInput.setValidator(new CheckedEditText.Validator() {
 			@Override
 			public boolean isValid(final String content) {
-				Log.d("nicole", "Check: '" + content + "'");
 				return !content.isEmpty();
 			}
 		});
@@ -86,16 +85,12 @@ public class BasicRegFragment extends Fragment {
 	private View.OnClickListener nextOnClick = new View.OnClickListener() {
 		@Override
 		public void onClick(final View v) {
-			Log.d("nicole", "Click next");
-
 			// Show errors if they're needed
 			if (!loginInput.isValid()) {
-				Log.d("nicole", "Not valid: login");
 				loginInput.requestFocus();
 				return;
 			}
 			if (!passwordInput.isValid()) {
-				Log.d("nicole", "Not valid: password");
 				passwordInput.requestFocus();
 				return;
 			}
@@ -113,9 +108,6 @@ public class BasicRegFragment extends Fragment {
 			final Activity activity = getActivity();
 			if (activity != null) {
 				startActivity(new Intent(activity, MainActivity.class));
-				Log.d("nicole", "Go back to Main");
-			} else {
-				Log.d("nicole", "Activity is null?");
 			}
 		}
 	};

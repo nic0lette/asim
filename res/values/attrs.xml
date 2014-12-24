@@ -2,6 +2,6 @@
 <resources>
 	<declare-styleable name="FloatingActionButton">
 		<attr name="actionDrawable" format="reference"/>
-		<attr name="color" format="reference"/>
+		<attr name="bgColor" format="reference"/>
 	</declare-styleable>
 </resources>
