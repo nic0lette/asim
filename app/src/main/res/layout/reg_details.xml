@@ -34,7 +34,7 @@
         android:gravity="center_vertical"
         android:hint="@string/account_add_handle"
         android:imeOptions="actionNext"
-        android:inputType="textPassword"
+        android:inputType="textWebEmailAddress"
         android:singleLine="true"
         android:textColor="@color/primary_text"
         android:textSize="@dimen/font_type_4" />
@@ -55,7 +55,7 @@
             android:gravity="center_vertical"
             android:hint="@string/account_add_host"
             android:imeOptions="actionNext"
-            android:inputType="textPassword"
+            android:inputType="textWebEmailAddress"
             android:singleLine="true"
             android:textColor="@color/primary_text"
             android:textSize="@dimen/font_type_4" />

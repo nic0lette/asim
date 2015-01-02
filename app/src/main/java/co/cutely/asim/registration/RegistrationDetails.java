@@ -3,6 +3,7 @@ package co.cutely.asim.registration;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,17 +23,24 @@ import co.cutely.asim.view.CheckedEditText;
  * A simple {@link Fragment} subclass.
  */
 public class RegistrationDetails extends Fragment {
+    private static final String TAG = RegistrationDetails.class.getSimpleName();
+
+    private static final String ACCOUNT_KEY = "ACCOUNT_KEY";
+
     private CheckedEditText handleInput;
     private CheckedEditText hostInput;
     private CheckedEditText portInput;
-
     private View next;
+
+    private XmppAccount account;
 
     public static RegistrationDetails create(final XmppAccount account) {
         final RegistrationDetails fragment = new RegistrationDetails();
-        fragment.handleInput.setText(account.handle);
-        fragment.hostInput.setText(account.host);
-        fragment.portInput.setText(account.port);
+
+        // Save the account...
+        final Bundle arguments = new Bundle();
+        arguments.putParcelable(ACCOUNT_KEY, account);
+        fragment.setArguments(arguments);
         return fragment;
     }
 
@@ -47,6 +55,19 @@ public class RegistrationDetails extends Fragment {
         portInput = (CheckedEditText) root.findViewById(R.id.port);
         next = root.findViewById(R.id.next);
 
+        // Grab the account
+        if (savedInstanceState == null) {
+            final Bundle arguments = getArguments();
+            account = arguments.getParcelable(ACCOUNT_KEY);
+        } else {
+            account = savedInstanceState.getParcelable(ACCOUNT_KEY);
+        }
+
+        // Fill in the data
+        handleInput.setText(account.handle);
+        hostInput.setText(account.host);
+        portInput.setText(Integer.toString(account.port));
+
         // Connect actions
         hostInput.setOnEditorActionListener(imeNext);
         next.setOnClickListener(nextOnClick);
@@ -55,12 +76,23 @@ public class RegistrationDetails extends Fragment {
         hostInput.setValidator(new CheckedEditText.Validator() {
             @Override
             public boolean isValid(final String content) {
-                return Pattern.matches("S+.\\S+", content);
+                try {
+                    final Uri uri = Uri.parse("uri://" + content);
+                    return uri.getHost() != null;
+                } catch (final Exception e) {
+                    return false;
+                }
             }
         });
 
         // Done
         return root;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(ACCOUNT_KEY, account);
     }
 
     private TextView.OnEditorActionListener imeNext = new TextView.OnEditorActionListener() {
@@ -87,7 +119,7 @@ public class RegistrationDetails extends Fragment {
             if (activity instanceof RegistrationActivity) {
                 final String handle = handleInput.getValue();
                 final String host = hostInput.getValue();
-                final int port = Integer.getInteger(portInput.getValue());
+                final int port = Integer.parseInt(portInput.getValue());
                 ((RegistrationActivity) activity).complete(handle, host, port);
             }
         }
