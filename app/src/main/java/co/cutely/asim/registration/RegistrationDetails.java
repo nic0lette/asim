@@ -10,10 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.TextView;
-
-import java.util.regex.Pattern;
 
 import co.cutely.asim.R;
 import co.cutely.asim.XmppAccount;
@@ -99,7 +96,7 @@ public class RegistrationDetails extends Fragment {
         @Override
         public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                // Act as though the handle pressed the button
+                // Act as though the user pressed the button
                 nextOnClick.onClick(next);
                 return true;
             }

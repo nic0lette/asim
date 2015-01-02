@@ -60,7 +60,7 @@ public class RegistrationIdFragment extends Fragment {
         @Override
         public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                // Act as though the handle pressed the button
+                // Act as though the user pressed the button
                 nextOnClick.onClick(next);
                 return true;
             }

@@ -161,7 +161,7 @@ public final class XmppService extends Service {
 	}
 
 	/**
-	 * Sends an xmpp message from a specific account to a specific handle
+	 * Sends an xmpp message from a specific account to a specific user
 	 *
 	 * @param xmppId the account to send the message from. Has to be connected at the Moment.
 	 * @param target the account to send the message to.
@@ -271,12 +271,11 @@ public final class XmppService extends Service {
 		for ( RosterGroup groupEntry : entry.getGroups() )
 			groups.add(groupEntry.getName());
 
-		final XmppUser u = new XmppUser(entry.getUser(), entry.getName(), groups);
-		return u;
+		return new XmppUser(entry.getUser(), entry.getName(), groups);
 	}
 
 	private void onConnectFail(XmppAccount account) {
-		Log.w(TAG, "Failed to connect as " + account.xmppId);
+		Log.w(TAG, "Failed to connect as '" + account.xmppId + "' (" + account.user + ") to '" + account.host + ":" + account.port + "'");
 	}
 
 	public class XmppBinder extends Binder {
@@ -292,7 +291,7 @@ public final class XmppService extends Service {
 	public class XmppUser {
 		public final String id;
 		public String name;
-		// the groups the handle is a member of
+		// the groups the user is a member of
 		public Set<String> groups;
 
 		// the OTR session
@@ -310,7 +309,7 @@ public final class XmppService extends Service {
 		}
 
 		// TODO: we are missing a few important parts here. E.g., at the  moment we have
-		// no way to determine if a handle is busy, etc. But - that will hopefully come :)
+		// no way to determine if a user is busy, etc. But - that will hopefully come :)
 	}
 
 	private class XmppConnection {
@@ -340,7 +339,7 @@ public final class XmppService extends Service {
 			XmppUser u = userMap.get(xmppId);
 
 			if ( u == null ) {
-				Log.e(TAG, "Trying to get OTR session for handle "+xmppId+" on account "+account.xmppId+" who does not exist");
+				Log.e(TAG, "Trying to get OTR session for user "+xmppId+" on account "+account.xmppId+" who does not exist");
 				return null; // FIXME - throw (internal) exception
 			}
 
@@ -374,8 +373,8 @@ public final class XmppService extends Service {
 
 				try {
 					conn.connect();
-					Log.i(TAG, "Trying to login for " + config.handle + " at " + config.host + " with " + config.resource);
-					conn.login(config.handle, config.password, config.resource);
+					Log.i(TAG, "Trying to login for " + config.user + " at " + config.host + " with " + config.resource);
+					conn.login(config.user, config.password, config.resource);
 					connection = new XmppConnection(config, conn);
 				} catch (SmackException e) {
 					Log.e(TAG, "Error connecting", e);
