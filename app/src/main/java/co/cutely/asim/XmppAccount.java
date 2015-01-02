@@ -6,11 +6,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A user's XMPP account
+ * A handle's XMPP account
  */
 public class XmppAccount implements Parcelable {
+    public final String handle;
 	public final String xmppId;
-	public final String user;
 	public final String password;
 	public final String host;
 	public final int port;
@@ -21,10 +21,14 @@ public class XmppAccount implements Parcelable {
 	}
 
 	public XmppAccount(String xmppId, String password, String host, int port) {
-		this(xmppId, password, host, port, null);
+		this(null, xmppId, password, host, port, null);
 	}
 
-	public XmppAccount(String xmppId, String password, String host, int port, String resource) {
+    public XmppAccount(String handle, String xmppId, String password, String host, int port) {
+        this(handle, xmppId, password, host, port, null);
+    }
+
+	public XmppAccount(String handle, String xmppId, String password, String host, int port, String resource) {
 		if (xmppId == null || password == null) {
 			throw new IllegalArgumentException("Account must include an id and password");
 		}
@@ -46,7 +50,7 @@ public class XmppAccount implements Parcelable {
 			this.host = host;
 		}
 
-		this.user = xmppId.substring(0, hostSeparator);
+		this.handle = handle == null ? xmppId.substring(0, hostSeparator) : handle;
 
 		this.port = port;
 		this.resource = (resource != null && !resource.isEmpty()) ? resource : DEFAULT_RESOURCE;
@@ -61,7 +65,7 @@ public class XmppAccount implements Parcelable {
 	public XmppAccount(final String json) throws JSONException {
 		final JSONObject o = new JSONObject(json);
 		xmppId = o.getString("xmppId");
-		user = o.getString("user");
+		handle = o.getString("handle");
 		password = o.getString("password");
 		host = o.getString("host");
 		port = o.getInt("port");
@@ -71,7 +75,7 @@ public class XmppAccount implements Parcelable {
 	public String toJson() throws JSONException {
 		final JSONObject o = new JSONObject();
 		o.put("xmppId", xmppId);
-		o.put("user", user);
+		o.put("handle", handle);
 		o.put("password", password);
 		o.put("host", host);
 		o.put("port", port);
@@ -96,7 +100,7 @@ public class XmppAccount implements Parcelable {
 
 	private XmppAccount(Parcel in) {
 		xmppId = in.readString();
-		user = in.readString();
+		handle = in.readString();
 		password = in.readString();
 		host = in.readString();
 		port = in.readInt();
@@ -111,7 +115,7 @@ public class XmppAccount implements Parcelable {
 	@Override
 	public void writeToParcel(final Parcel out, final int flags) {
 		out.writeString(xmppId);
-		out.writeString(user);
+		out.writeString(handle);
 		out.writeString(password);
 		out.writeString(host);
 		out.writeInt(port);

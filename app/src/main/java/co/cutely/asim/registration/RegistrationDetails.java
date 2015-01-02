@@ -1,5 +1,6 @@
 package co.cutely.asim.registration;
 
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -8,47 +9,53 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.regex.Pattern;
 
 import co.cutely.asim.R;
+import co.cutely.asim.XmppAccount;
 import co.cutely.asim.view.CheckedEditText;
 
 /**
- * Created by nicole on 12/23/14.
+ * A simple {@link Fragment} subclass.
  */
-public class RegistrationIdFragment extends Fragment {
-    private CheckedEditText loginInput;
-    private CheckedEditText passwordInput;
+public class RegistrationDetails extends Fragment {
+    private CheckedEditText handleInput;
+    private CheckedEditText hostInput;
+    private CheckedEditText portInput;
+
     private View next;
+
+    public static RegistrationDetails create(final XmppAccount account) {
+        final RegistrationDetails fragment = new RegistrationDetails();
+        fragment.handleInput.setText(account.handle);
+        fragment.hostInput.setText(account.host);
+        fragment.portInput.setText(account.port);
+        return fragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        final View root = inflater.inflate(R.layout.reg_xmpp_id, container, false);
+        final View root = inflater.inflate(R.layout.reg_details, container, false);
 
         // Find our views
-        loginInput = (CheckedEditText) root.findViewById(R.id.login);
-        passwordInput = (CheckedEditText) root.findViewById(R.id.password);
+        handleInput = (CheckedEditText) root.findViewById(R.id.handle);
+        hostInput = (CheckedEditText) root.findViewById(R.id.host);
+        portInput = (CheckedEditText) root.findViewById(R.id.port);
         next = root.findViewById(R.id.next);
 
         // Connect actions
-        passwordInput.setOnEditorActionListener(imeNext);
+        hostInput.setOnEditorActionListener(imeNext);
         next.setOnClickListener(nextOnClick);
 
         // And set up the validators
-        loginInput.setValidator(new CheckedEditText.Validator() {
+        hostInput.setValidator(new CheckedEditText.Validator() {
             @Override
             public boolean isValid(final String content) {
-                final String email = "\\S+@\\S+.\\S+";
-                return Pattern.matches(email, content);
-            }
-        });
-        passwordInput.setValidator(new CheckedEditText.Validator() {
-            @Override
-            public boolean isValid(final String content) {
-                return !content.isEmpty();
+                return Pattern.matches("S+.\\S+", content);
             }
         });
 
@@ -71,27 +78,17 @@ public class RegistrationIdFragment extends Fragment {
     private View.OnClickListener nextOnClick = new View.OnClickListener() {
         @Override
         public void onClick(final View v) {
-            if (!loginInput.isValid() || !passwordInput.isValid()) {
-                // Show errors - check in reverse order
-                // (ie: if login isn't valid that's where focus should go)
-                if (!passwordInput.isValid()) {
-                    passwordInput.requestFocus();
-                }
-
-                if (!loginInput.isValid()) {
-                    loginInput.requestFocus();
-                }
-
-                // Don't continue (because of errors)
+            if (!hostInput.isValid()) {
+                hostInput.requestFocus();
                 return;
             }
 
             final Activity activity = getActivity();
             if (activity instanceof RegistrationActivity) {
-                // Create a basic account
-                final String login = loginInput.getValue();
-                final String password = passwordInput.getValue();
-                ((RegistrationActivity) activity).next(login, password);
+                final String handle = handleInput.getValue();
+                final String host = hostInput.getValue();
+                final int port = Integer.getInteger(portInput.getValue());
+                ((RegistrationActivity) activity).complete(handle, host, port);
             }
         }
     };

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Asim</string>
 
+    <string name="app_name">Asim</string>
     <string name="account_add_title">Add your account</string>
     <string name="account_add_login">XMPP ID</string>
     <string name="account_add_password">Password</string>
     <string name="account_add_next">Next</string>
-
     <string name="account_add_handle">Handle</string>
     <string name="account_add_host">Host</string>
     <string name="account_add_port">Port</string>
+    <string name="account_add_port_spacing">00000</string>
+    <string name="account_add_host_port_separator">:</string>
+    <string name="account_add_hint">        You can set up your account in just a few steps.</string>
+    <string name="core_next">Next</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="account_add_hint">
-        You can set up your account in just a few steps.
-    </string>
 </resources>
